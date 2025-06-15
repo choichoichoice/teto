@@ -334,8 +334,8 @@ export default function AnalyzePage() {
                   <div className="flex flex-col gap-3">
                                          {/* 카메라로 촬영 */}
                      <label 
+                       htmlFor="camera-input"
                        className="group relative flex flex-col items-center justify-center w-40 h-32 mx-auto border-2 border-dashed border-purple-300 rounded-xl cursor-pointer bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300 hover:border-purple-400"
-   
                      >
                        <div className="relative flex flex-col items-center justify-center py-2">
                          <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-2">
@@ -347,22 +347,20 @@ export default function AnalyzePage() {
                          <p className="text-xs text-gray-500">JPG, PNG (최대 10MB)</p>
                        </div>
                        <input
+                         id="camera-input"
                          type="file"
                          className="hidden"
-                         accept="image/*,image/heic,image/heif"
+                         accept="image/*"
                          capture="environment"
                          onChange={handleImageSelect}
                          multiple={false}
-                         onClick={(e) => {
-                           e.stopPropagation()
-                         }}
                        />
                      </label>
 
-                                         {/* 갤러리에서 선택 */}
+                     {/* 갤러리에서 선택 */}
                      <label 
+                       htmlFor="gallery-input"
                        className="group relative flex flex-col items-center justify-center w-40 h-32 mx-auto border-2 border-dashed border-green-300 rounded-xl cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 transition-all duration-300 hover:border-green-400"
-   
                      >
                        <div className="relative flex flex-col items-center justify-center py-2">
                          <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-2">
@@ -374,14 +372,12 @@ export default function AnalyzePage() {
                          <p className="text-xs text-gray-500">JPG, PNG (최대 10MB)</p>
                        </div>
                        <input
+                         id="gallery-input"
                          type="file"
                          className="hidden"
-                         accept="image/*,image/heic,image/heif"
+                         accept="image/*"
                          onChange={handleImageSelect}
                          multiple={false}
-                         onClick={(e) => {
-                           e.stopPropagation()
-                         }}
                        />
                      </label>
                   </div>
