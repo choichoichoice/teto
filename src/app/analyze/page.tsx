@@ -17,12 +17,13 @@ export default function AnalyzePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [developmentTips, setDevelopmentTips] = useState<DevelopmentTip | null>(null)
-  const [isLoadingTips, setIsLoadingTips] = useState(false)
+
   const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useAuth()
 
   // 페이지 로드 시 로컬 스토리지에서 데이터 복원
   useEffect(() => {
+    
     const savedResult = localStorage.getItem('tetoAnalysisResult')
     const savedTips = localStorage.getItem('tetoDevelopmentTips')
     const savedImagePreview = localStorage.getItem('tetoImagePreview')
@@ -70,16 +71,48 @@ export default function AnalyzePage() {
   }, [imagePreview])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setSelectedImage(file)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
+    try {
+      const file = event.target.files?.[0]
+      
+      if (!file) {
+        return
       }
+      
+      // 파일 크기 체크 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('파일 크기는 10MB 이하여야 합니다.')
+        return
+      }
+      
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.')
+        return
+      }
+      setSelectedImage(file)
+      
+      const reader = new FileReader()
+      
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setImagePreview(e.target.result as string)
+        }
+      }
+      
+      reader.onerror = (error) => {
+        console.error('파일 읽기 오류:', error)
+        alert('파일을 읽는 중 오류가 발생했습니다.')
+      }
+      
       reader.readAsDataURL(file)
       setAnalysisResult(null)
       setDevelopmentTips(null)
+      
+      // 입력 필드 초기화 (같은 파일 재선택 가능하도록)
+      event.target.value = ''
+    } catch (error) {
+      console.error('파일 선택 중 심각한 오류:', error)
+      alert('파일 선택 중 오류가 발생했습니다.')
     }
   }
 
@@ -97,28 +130,19 @@ export default function AnalyzePage() {
       const formData = new FormData()
       formData.append('image', selectedImage)
 
-      console.log('이미지 분석 요청 시작...')
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       })
 
       if (!response.ok) {
-        const errorData = await response.text()
-        console.error('API 응답 에러:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData
-        })
-        throw new Error(`분석에 실패했습니다. (${response.status}: ${response.statusText})`)
+        throw new Error('분석에 실패했습니다.')
       }
 
       const result = await response.json()
-      console.log('분석 결과:', result)
       setAnalysisResult(result)
 
       // 호르몬 강화 팁도 함께 가져오기
-      console.log('호르몬 강화 팁 요청 시작...')
       const tipsResponse = await fetch('/api/tips', {
         method: 'POST',
         headers: {
@@ -129,10 +153,7 @@ export default function AnalyzePage() {
 
       if (tipsResponse.ok) {
         const tips = await tipsResponse.json()
-        console.log('호르몬 강화 팁:', tips)
         setDevelopmentTips(tips)
-      } else {
-        console.error('호르몬 강화 팁 로딩 실패:', await tipsResponse.text())
       }
     } catch (error) {
       console.error('분석 중 상세 에러:', error)
@@ -142,34 +163,7 @@ export default function AnalyzePage() {
     }
   }
 
-  const handleGetTips = async () => {
-    if (!analysisResult) return
 
-    setIsLoadingTips(true)
-    try {
-      const response = await fetch('/api/tips', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ type: analysisResult.type }),
-      })
-
-      if (!response.ok) {
-        throw new Error('팁 로딩에 실패했습니다.')
-      }
-
-      const tips: DevelopmentTip = await response.json()
-      setDevelopmentTips(tips)
-      // 로컬 스토리지에 저장 (useEffect에서도 저장되지만 즉시 저장을 위해)
-      localStorage.setItem('tetoDevelopmentTips', JSON.stringify(tips))
-    } catch (error) {
-      console.error('Tips error:', error)
-      alert('팁 로딩 중 오류가 발생했습니다. 다시 시도해주세요.')
-    } finally {
-      setIsLoadingTips(false)
-    }
-  }
 
   const handleShare = async () => {
     if (!analysisResult || !user) return
@@ -337,23 +331,60 @@ export default function AnalyzePage() {
                     </div>
                   </div>
                   
-                  <label className="group relative flex flex-col items-center justify-center w-40 h-40 mx-auto border-2 border-dashed border-purple-300 rounded-xl cursor-pointer bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300 hover:border-purple-400">
-                    <div className="relative flex flex-col items-center justify-center py-4">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-3">
-                        <Upload className="w-4 h-4 text-white" />
-                      </div>
-                      <p className="mb-1 text-xs text-gray-700 font-medium text-center">
-                        <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">클릭하여 업로드</span>
-                      </p>
-                      <p className="text-xs text-gray-500">JPG, PNG (최대 10MB)</p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                    />
-                  </label>
+                  <div className="flex flex-col gap-3">
+                                         {/* 카메라로 촬영 */}
+                     <label 
+                       className="group relative flex flex-col items-center justify-center w-40 h-32 mx-auto border-2 border-dashed border-purple-300 rounded-xl cursor-pointer bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300 hover:border-purple-400"
+   
+                     >
+                       <div className="relative flex flex-col items-center justify-center py-2">
+                         <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-2">
+                           <Camera className="w-3 h-3 text-white" />
+                         </div>
+                         <p className="mb-1 text-xs text-gray-700 font-medium text-center">
+                           <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">카메라로 촬영</span>
+                         </p>
+                         <p className="text-xs text-gray-500">JPG, PNG (최대 10MB)</p>
+                       </div>
+                       <input
+                         type="file"
+                         className="hidden"
+                         accept="image/*,image/heic,image/heif"
+                         capture="environment"
+                         onChange={handleImageSelect}
+                         multiple={false}
+                         onClick={(e) => {
+                           e.stopPropagation()
+                         }}
+                       />
+                     </label>
+
+                                         {/* 갤러리에서 선택 */}
+                     <label 
+                       className="group relative flex flex-col items-center justify-center w-40 h-32 mx-auto border-2 border-dashed border-green-300 rounded-xl cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 transition-all duration-300 hover:border-green-400"
+   
+                     >
+                       <div className="relative flex flex-col items-center justify-center py-2">
+                         <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-2">
+                           <Upload className="w-3 h-3 text-white" />
+                         </div>
+                         <p className="mb-1 text-xs text-gray-700 font-medium text-center">
+                           <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">갤러리에서 선택</span>
+                         </p>
+                         <p className="text-xs text-gray-500">JPG, PNG (최대 10MB)</p>
+                       </div>
+                       <input
+                         type="file"
+                         className="hidden"
+                         accept="image/*,image/heic,image/heif"
+                         onChange={handleImageSelect}
+                         multiple={false}
+                         onClick={(e) => {
+                           e.stopPropagation()
+                         }}
+                       />
+                     </label>
+                  </div>
                 </div>
               )}
 
@@ -608,6 +639,45 @@ export default function AnalyzePage() {
                 </div>
               </div>
 
+              {/* 호르몬 강화하기 */}
+              {developmentTips && (
+                <div className="mb-6">
+                  <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-purple-600" />
+                    호르몬 강화하기
+                  </h3>
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 p-4 rounded-lg">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3 text-gray-800">{developmentTips.title}</h4>
+                        <ul className="space-y-2">
+                          {(developmentTips.tips || []).map((tip, index) => (
+                            <li key={index} className="flex items-start space-x-2">
+                              <span className="text-green-500 font-bold text-sm mt-1">✓</span>
+                              <span className="text-sm leading-relaxed text-gray-700">{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3 text-gray-800">추천 상품 키워드:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(developmentTips.shoppingKeywords || []).map((keyword, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium border border-purple-200"
+                            >
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* 공유 버튼 */}
               <div className="flex flex-col gap-2">
                 <Button
@@ -616,23 +686,6 @@ export default function AnalyzePage() {
                 >
                   <Share2 className="mr-2 h-4 w-4" />
                   결과 공유하기
-                </Button>
-                <Button
-                  onClick={handleGetTips}
-                  disabled={isLoadingTips}
-                  className="flex items-center justify-center text-sm px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
-                >
-                  {isLoadingTips ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      로딩 중...
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUp className="mr-2 h-4 w-4" />
-                      호르몬 강화하기
-                    </>
-                  )}
                 </Button>
                 <Button
                   variant="outline"
@@ -648,46 +701,7 @@ export default function AnalyzePage() {
           )}
         </div>
 
-        {/* 발전 팁 섹션 */}
-        {developmentTips && (
-          <Card className="mb-6 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-base">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                <span className="text-blue-800">{developmentTips.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-semibold mb-3 text-gray-800">발전 팁:</h3>
-                  <ul className="space-y-2">
-                    {(developmentTips.tips || []).map((tip, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <span className="text-green-500 font-bold text-sm mt-1">✓</span>
-                        <span className="text-sm leading-relaxed text-gray-700">{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
 
-                <div>
-                  <h3 className="text-sm font-semibold mb-3 text-gray-800">추천 상품 키워드:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(developmentTips.shoppingKeywords || []).map((keyword, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium border border-purple-200"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         </div>
       </div>

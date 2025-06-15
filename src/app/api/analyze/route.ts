@@ -13,8 +13,6 @@ function getOpenAIClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('API 요청 시작...')
-    
     // OpenAI 클라이언트 초기화
     const openai = getOpenAIClient()
     
@@ -22,19 +20,15 @@ export async function POST(request: NextRequest) {
     const image = formData.get('image') as File
 
     if (!image) {
-      console.error('이미지가 없습니다.')
       return NextResponse.json(
         { error: '이미지가 필요합니다.' },
         { status: 400 }
       )
     }
 
-    console.log('이미지 변환 시작...')
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const base64Image = buffer.toString('base64')
-
-    console.log('OpenAI API 호출 시작...')
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -97,8 +91,6 @@ JSON 형식으로 응답해주세요:
       max_tokens: 1000
     })
 
-    console.log('OpenAI 응답:', response.choices[0].message.content)
-    
     let result
     try {
       const content = response.choices[0].message.content || '{}'
@@ -107,7 +99,6 @@ JSON 형식으로 응답해주세요:
       const jsonString = jsonMatch ? jsonMatch[0] : content
       result = JSON.parse(jsonString)
     } catch (parseError) {
-      console.error('JSON 파싱 오류:', parseError)
       // 기본값 반환 (여성 이미지에 더 적합하게)
       result = {
         type: "테토녀",
@@ -145,7 +136,6 @@ JSON 형식으로 응답해주세요:
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error('API 에러:', error)
     
     // 환경변수 오류인 경우 특별한 메시지 반환
     if (error instanceof Error && error.message.includes('OPENAI_API_KEY')) {

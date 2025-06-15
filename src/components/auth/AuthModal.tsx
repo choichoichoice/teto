@@ -54,20 +54,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
     setSuccess('')
 
     try {
-      // 테스트 계정 체크
-      if (email === 'test@teto.com' && password === 'test123') {
-        localStorage.setItem('test_session', 'true')
-        setSuccess('테스트 계정으로 로그인 성공!')
-        setTimeout(() => {
-          onSuccess?.()
-          handleClose()
-          // 페이지 새로고침으로 AuthContext 업데이트
-          window.location.reload()
-        }, 1000)
-        setLoading(false)
-        return
-      }
-
       // 데모 환경에서는 Mock 로그인 사용
       if (process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://demo.supabase.co') {
         // 간단한 유효성 검사
@@ -254,17 +240,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
               </TabsList>
 
               <TabsContent value="login" className="space-y-6">
-                {/* 테스트 계정 안내 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="text-sm text-blue-800">
-                    <div className="font-medium mb-2">🧪 테스트 계정</div>
-                    <div className="space-y-1">
-                      <div>이메일: <code className="bg-blue-100 px-2 py-1 rounded text-xs">test@teto.com</code></div>
-                      <div>비밀번호: <code className="bg-blue-100 px-2 py-1 rounded text-xs">test123</code></div>
-                    </div>
-                  </div>
-                </div>
-                
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-4">
                     <Label htmlFor="email" className="text-xl font-medium">이메일</Label>
