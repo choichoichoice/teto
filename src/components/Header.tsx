@@ -34,24 +34,24 @@ export default function Header() {
   }
   return (
     <header className="border-b bg-white shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+      <div className="container mx-auto px-2">
+        <div className="flex h-12 items-center justify-between">
           {/* 왼쪽 영역: 로고와 네비게이션 */}
-          <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-5">
-              <Brain className="h-16 w-16 text-purple-600" />
-              <span className="text-3xl font-bold text-gray-900">테토-에겐 분석기</span>
+          <div className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-1">
+              <Brain className="h-6 w-6 text-purple-600" />
+              <span className="text-sm font-bold text-gray-900">테토-에겐</span>
             </Link>
-            <nav className="flex items-center space-x-8">
+            <nav className="flex items-center space-x-2">
               <Link 
                 href="/" 
-                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-2xl"
+                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-xs"
               >
                 홈
               </Link>
               <Link 
                 href="/analyze" 
-                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-2xl"
+                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-xs"
               >
                 분석하기
               </Link>
@@ -59,38 +59,38 @@ export default function Header() {
           </div>
 
           {/* 오른쪽 영역: 인증 관련 */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1">
             {loading ? (
-              <div className="h-10 w-20 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-6 w-12 bg-gray-200 animate-pulse rounded"></div>
             ) : user ? (
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-3">
-                  <User className="h-7 w-7 text-gray-600" />
-                  <span className="text-lg font-medium text-gray-700">
-                    {user.user_metadata?.full_name || user.email}
+              <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1">
+                  <User className="h-3 w-3 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-700 hidden sm:block">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                 </div>
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="sm"
                   onClick={signOut}
-                  className="flex items-center space-x-2 text-lg px-6 py-3 h-auto"
+                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto"
                 >
-                  <LogOut className="h-6 w-6" />
-                  <span>로그아웃</span>
+                  <LogOut className="h-3 w-3" />
+                  <span className="hidden sm:block">로그아웃</span>
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1">
                 <Button
                   onClick={() => {
                     setAuthModalTab('login')
                     setShowAuthModal(true)
                   }}
-                  className="flex items-center space-x-2 text-lg px-6 py-3 h-auto"
-                  size="lg"
+                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto"
+                  size="sm"
                 >
-                  <User className="h-6 w-6" />
+                  <User className="h-3 w-3" />
                   <span>로그인</span>
                 </Button>
                 <Button
@@ -99,10 +99,10 @@ export default function Header() {
                     setAuthModalTab('signup')
                     setShowAuthModal(true)
                   }}
-                  className="flex items-center space-x-2 text-lg px-6 py-3 h-auto"
-                  size="lg"
+                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto hidden sm:flex"
+                  size="sm"
                 >
-                  <User className="h-6 w-6" />
+                  <User className="h-3 w-3" />
                   <span>회원가입</span>
                 </Button>
               </div>

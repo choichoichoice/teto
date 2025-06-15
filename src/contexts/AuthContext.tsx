@@ -19,6 +19,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // 테스트 계정 세션 체크
+    const testSession = localStorage.getItem('test_session')
+    if (testSession) {
+      const testUser = {
+        id: 'test-user-id',
+        email: 'test@teto.com',
+        user_metadata: { full_name: '테스트 사용자' },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString(),
+        phone_confirmed_at: undefined,
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        role: 'authenticated',
+        updated_at: new Date().toISOString(),
+        identities: [],
+        factors: []
+      } as User
+      setUser(testUser)
+      setSession({ 
+        user: testUser,
+        access_token: 'test-token',
+        refresh_token: 'test-refresh',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer'
+      } as Session)
+      setLoading(false)
+      return
+    }
+
     // 현재 세션 가져오기
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -42,6 +74,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = async () => {
+    // 테스트 세션 제거
+    localStorage.removeItem('test_session')
+    setUser(null)
+    setSession(null)
+    
+    // 실제 Supabase 로그아웃
     await supabase.auth.signOut()
   }
 

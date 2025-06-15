@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Mail, Lock, User, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, ArrowLeft, X } from 'lucide-react'
 import AdBanner from '@/components/AdBanner'
 
 interface AuthModalProps {
@@ -54,6 +54,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
     setSuccess('')
 
     try {
+      // 테스트 계정 체크
+      if (email === 'test@teto.com' && password === 'test123') {
+        localStorage.setItem('test_session', 'true')
+        setSuccess('테스트 계정으로 로그인 성공!')
+        setTimeout(() => {
+          onSuccess?.()
+          handleClose()
+          // 페이지 새로고침으로 AuthContext 업데이트
+          window.location.reload()
+        }, 1000)
+        setLoading(false)
+        return
+      }
+
       // 데모 환경에서는 Mock 로그인 사용
       if (process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://demo.supabase.co') {
         // 간단한 유효성 검사
@@ -182,9 +196,42 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
             <AdBanner size="small" className="mx-auto" />
           </div>
           
-          <CardHeader className="space-y-4 pb-8">
-            <CardTitle className="text-5xl font-bold text-center">환영합니다!</CardTitle>
-            <CardDescription className="text-center text-gray-600 text-xl">
+          <CardHeader className="space-y-4 pb-8 relative">
+            {/* 모바일 뒤로가기 버튼 */}
+            <div className="flex items-center justify-between mb-4 md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 p-2"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span className="text-sm">뒤로가기</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className="p-2 text-gray-600 hover:text-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            {/* 데스크톱 닫기 버튼 */}
+            <div className="hidden md:block absolute top-4 right-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className="p-2 text-gray-600 hover:text-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <CardTitle className="text-3xl md:text-5xl font-bold text-center">환영합니다!</CardTitle>
+            <CardDescription className="text-center text-gray-600 text-lg md:text-xl">
               계정에 로그인하거나 새 계정을 만드세요
             </CardDescription>
           </CardHeader>
@@ -207,6 +254,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
               </TabsList>
 
               <TabsContent value="login" className="space-y-6">
+                {/* 테스트 계정 안내 */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="text-sm text-blue-800">
+                    <div className="font-medium mb-2">🧪 테스트 계정</div>
+                    <div className="space-y-1">
+                      <div>이메일: <code className="bg-blue-100 px-2 py-1 rounded text-xs">test@teto.com</code></div>
+                      <div>비밀번호: <code className="bg-blue-100 px-2 py-1 rounded text-xs">test123</code></div>
+                    </div>
+                  </div>
+                </div>
+                
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-4">
                     <Label htmlFor="email" className="text-xl font-medium">이메일</Label>

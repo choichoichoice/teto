@@ -12,6 +12,8 @@ export interface AnalysisResult {
     extraversion: number
     stability: number
     initiative: number
+    teto: number
+    egen: number
   }
   scenarios: string[]
   dailyMission: string

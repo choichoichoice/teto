@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
 import ParticlesBg from "@/components/ParticlesBg";
-import AdBanner from "@/components/AdBanner";
+
 
 export default function Home() {
   return (
@@ -13,28 +13,26 @@ export default function Home() {
       <section className="relative bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <ParticlesBg />
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
-          <div className="text-center max-w-6xl mx-auto">
-            <h1 className="text-7xl md:text-8xl font-bold mb-8 leading-tight">
-              {/* 사진으로 알아보는  */}
-              <br />
+        <div className="relative container mx-auto px-2 py-16">
+          <div className="text-center max-w-sm mx-auto">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 leading-tight">
               <span className="bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
                 테토-에겐 분석기
               </span>
             </h1>
-            <p className="text-3xl md:text-4xl mb-12 text-gray-200 leading-relaxed">
-              당신의 사진을 AI가 분석하여 테토남, 테토녀, 에겐남, 에겐녀 중 가장 가까운 성격 유형에 가까운지 무료로 알려드립니다.
+            <p className="text-xs sm:text-sm mb-4 text-gray-200 leading-relaxed px-2">
+              AI가 사진을 분석하여 성격 유형을 무료로 알려드립니다.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex justify-center">
               <Button 
-                size="lg" 
+                size="sm" 
                 asChild
-                className="bg-white text-purple-600 hover:bg-gray-100 text-3xl px-12 py-8 h-auto"
+                className="bg-white text-purple-600 hover:bg-gray-100 text-xs px-3 py-2 h-auto"
               >
-                <Link href="/analyze" className="flex items-center space-x-4">
-                  <Camera className="h-10 w-10" />
-                  <span>무료 분석 시작하기</span>
-                  <ArrowRight className="h-10 w-10" />
+                <Link href="/analyze" className="flex items-center space-x-2">
+                  <Camera className="h-3 w-3" />
+                  <span>무료 분석 시작</span>
+                  <ArrowRight className="h-3 w-3" />
                 </Link>
               </Button>
             </div>
@@ -42,64 +40,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 배너 1 - 히어로 섹션 후 */}
-      <section className="py-8 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <AdBanner position="horizontal" className="mx-auto h-[150px]" />
+      {/* 광고 공간 1 */}
+      <section className="py-2 bg-white">
+        <div className="container mx-auto px-2">
+          <div className="mx-auto h-[50px] bg-gray-100 rounded"></div>
         </div>
       </section>
 
       {/* 특징 섹션 */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-6 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-6">
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-2 px-2">
               AI 테토-에겐 분석기로<br />
               무료로 당신의 고유 특성을 발견해보세요.
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            <Card className="text-center px-16 py-12 border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="mx-auto w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mb-6">
-                  <Brain className="h-16 w-16 text-purple-600" />
+          <div className="grid grid-cols-1 gap-2 max-w-xs mx-auto">
+            <Card className="text-center px-1 py-2 border-none shadow-sm">
+              <CardHeader className="pb-1">
+                <div className="mx-auto w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mb-1">
+                  <Brain className="h-3 w-3 text-purple-600" />
                 </div>
-                <CardTitle className="text-3xl mb-4">AI 정밀 분석</CardTitle>
+                <CardTitle className="text-xs font-semibold mb-1">AI 정밀 분석</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-gray-600 leading-relaxed">
-                  고도화된 AI 기술로 얼굴 표정과 분위기를 종합 분석하여 정확한 성격 유형을 판단합니다.
+              <CardContent className="pt-0">
+                <CardDescription className="text-xs text-gray-600 leading-tight">
+                  AI로 얼굴 분석하여 성격 유형 판단
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="text-center px-16 py-12 border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                  <Users className="h-16 w-16 text-blue-600" />
+            <Card className="text-center px-1 py-2 border-none shadow-sm">
+              <CardHeader className="pb-1">
+                <div className="mx-auto w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mb-1">
+                  <Users className="h-3 w-3 text-blue-600" />
                 </div>
-                <CardTitle className="text-3xl mb-4">4가지 유형</CardTitle>
+                <CardTitle className="text-xs font-semibold mb-1">4가지 유형</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-gray-600 leading-relaxed">
-                  테토남, 테토녀, 에겐남, 에겐녀의 4가지 호르몬 기반 성격 유형으로 
-                  구분하여 자세한 분석 결과를 제공합니다
+              <CardContent className="pt-0">
+                <CardDescription className="text-xs text-gray-600 leading-tight">
+                  테토남, 테토녀, 에겐남, 에겐녀로 구분
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="text-center px-16 py-12 border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                  <Sparkles className="h-16 w-16 text-green-600" />
+            <Card className="text-center px-1 py-2 border-none shadow-sm">
+              <CardHeader className="pb-1">
+                <div className="mx-auto w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mb-1">
+                  <Sparkles className="h-3 w-3 text-green-600" />
                 </div>
-                <CardTitle className="text-3xl mb-4">맞춤 추천</CardTitle>
+                <CardTitle className="text-xs font-semibold mb-1">맞춤 추천</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-gray-600 leading-relaxed">
-                  분석 결과를 바탕으로 당신의 강점을 더욱 발전시킬 수 있는 
-                  개인화된 상품과 팁을 추천해드립니다
+              <CardContent className="pt-0">
+                <CardDescription className="text-xs text-gray-600 leading-tight">
+                  개인화된 상품과 팁 추천
                 </CardDescription>
               </CardContent>
             </Card>
@@ -107,78 +103,78 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 배너 2 - 특징 섹션 후 */}
-      <section className="py-8 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <AdBanner position="horizontal" className="mx-auto h-[200px]" />
+      {/* 광고 공간 2 */}
+      <section className="py-2 bg-white">
+        <div className="container mx-auto px-2">
+          <div className="mx-auto h-[60px] bg-gray-100 rounded"></div>
         </div>
       </section>
 
       {/* 성격 유형 소개 섹션 */}
-      <section className="py-24">
+      <section className="py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 px-2">
               4가지 성격 유형을 알아보세요
             </h2>
-            <p className="text-3xl text-gray-600 max-w-4xl mx-auto">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 max-w-2xl mx-auto px-2">
               각 유형마다 고유한 특성과 매력이 있습니다
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors p-8">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Image src="/tetoman.png" alt="테토남" width={150} height={150} style={{ width: "auto", height: "auto" }} />
+          <div className="grid grid-cols-2 gap-1 sm:gap-2 max-w-sm mx-auto">
+                        <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors p-1">
+              <CardHeader className="text-center pb-0">
+                <div className="flex justify-center mb-1">
+                  <Image src="/tetoman.png" alt="테토남" width={60} height={60} className="w-6 h-6 sm:w-8 sm:h-8" style={{ width: "auto", height: "auto" }} />
                 </div>
-                <CardTitle className="text-blue-600 text-3xl mb-4">테토남</CardTitle>
+                <CardTitle className="text-blue-600 text-xs font-semibold mb-1">테토남</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-muted-foreground leading-relaxed">
-                  주도적이고 자신감 있는 성향. 강인함과 직설적인 태도가 특징인 남성 유형
+              <CardContent className="pt-0 px-1">
+                <CardDescription className="text-xs text-muted-foreground leading-tight text-center">
+                  외향적 양기 - 주도적이고 현실적
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-pink-200 hover:border-pink-400 transition-colors p-8">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Image src="/tetowoman.png" alt="테토녀" width={150} height={150} style={{ width: "auto", height: "auto" }} />
+            <Card className="border-2 border-pink-200 hover:border-pink-400 transition-colors p-1">
+              <CardHeader className="text-center pb-0">
+                <div className="flex justify-center mb-1">
+                  <Image src="/tetowoman.png" alt="테토녀" width={60} height={60} className="w-6 h-6 sm:w-8 sm:h-8" style={{ width: "auto", height: "auto" }} />
                 </div>
-                <CardTitle className="text-pink-600 text-3xl mb-4">테토녀</CardTitle>
+                <CardTitle className="text-pink-600 text-xs font-semibold mb-1">테토녀</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-muted-foreground leading-relaxed">
-                  독립적이고 주도적인 연애 스타일을 가진 여성. 강한 의지력이 특징
+              <CardContent className="pt-0 px-1">
+                <CardDescription className="text-xs text-muted-foreground leading-tight text-center">
+                  외향적 양기 - 활발하고 도전적
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors p-8">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Image src="/egenman.png" alt="에겐남" width={150} height={150} style={{ width: "auto", height: "auto" }} />
+            <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors p-1">
+              <CardHeader className="text-center pb-0">
+                <div className="flex justify-center mb-1">
+                  <Image src="/egenman.png" alt="에겐남" width={60} height={60} className="w-6 h-6 sm:w-8 sm:h-8" style={{ width: "auto", height: "auto" }} />
                 </div>
-                <CardTitle className="text-purple-600 text-3xl mb-4">에겐남</CardTitle>
+                <CardTitle className="text-purple-600 text-xs font-semibold mb-1">에겐남</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-muted-foreground leading-relaxed">
-                  감성적이고 공감 능력이 뛰어난 남성. 부드럽고 섬세한 감정 표현이 특징
+              <CardContent className="pt-0 px-1">
+                <CardDescription className="text-xs text-muted-foreground leading-tight text-center">
+                  내향적 음기 - 섬세하고 감성적
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-rose-200 hover:border-rose-400 transition-colors p-8">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Image src="/egenwoman.png" alt="에겐녀" width={150} height={150} style={{ width: "auto", height: "auto" }} />
+            <Card className="border-2 border-rose-200 hover:border-rose-400 transition-colors p-1">
+              <CardHeader className="text-center pb-0">
+                <div className="flex justify-center mb-1">
+                  <Image src="/egenwoman.png" alt="에겐녀" width={60} height={60} className="w-6 h-6 sm:w-8 sm:h-8" style={{ width: "auto", height: "auto" }} />
                 </div>
-                <CardTitle className="text-rose-600 text-3xl mb-4">에겐녀</CardTitle>
+                <CardTitle className="text-rose-600 text-xs font-semibold mb-1">에겐녀</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-2xl text-muted-foreground leading-relaxed">
-                  부드럽고 감성적인 여성. 공감과 안정감을 중시하는 따뜻한 성향
+              <CardContent className="pt-0 px-1">
+                <CardDescription className="text-xs text-muted-foreground leading-tight text-center">
+                  내향적 음기 - 부드럽고 공감적
                 </CardDescription>
               </CardContent>
             </Card>
@@ -186,32 +182,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 배너 3 - 성격 유형 섹션 후 */}
-      <section className="py-8 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <AdBanner position="horizontal" className="mx-auto h-[180px]" />
+      {/* 광고 공간 3 */}
+      <section className="py-2 bg-gray-50">
+        <div className="container mx-auto px-2">
+          <div className="mx-auto h-[55px] bg-gray-200 rounded"></div>
         </div>
       </section>
 
       {/* CTA 섹션 */}
-      <section className="py-24 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-8">
-            지금 바로 당신의 성격 유형을 무료로 알아보세요!
+      <section className="py-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+        <div className="container mx-auto px-2 text-center">
+          <h2 className="text-sm sm:text-base md:text-lg font-bold mb-2 px-2">
+            지금 바로 성격 유형을 무료로 알아보세요!
           </h2>
-          <p className="text-3xl mb-12 max-w-4xl mx-auto leading-relaxed">
-            단 한 장의 사진으로 숨겨진 성격과 강점을 발견하고, 
-            맞춤형 발전 방향을 찾아보세요.
+          <p className="text-xs mb-4 max-w-xs mx-auto leading-relaxed px-2">
+            한 장의 사진으로 성격과 강점을 발견하세요.
           </p>
           <Button 
-            size="lg" 
+            size="sm" 
             asChild
-            className="bg-white text-purple-600 hover:bg-gray-100 text-3xl px-12 py-8 h-auto"
+            className="bg-white text-purple-600 hover:bg-gray-100 text-xs px-3 py-2 h-auto"
           >
-            <Link href="/analyze" className="flex items-center space-x-4">
-              <Camera className="h-10 w-10" />
-              <span>무료 분석 시작하기</span>
-              <ArrowRight className="h-10 w-10" />
+            <Link href="/analyze" className="flex items-center space-x-2">
+              <Camera className="h-3 w-3" />
+              <span>무료 분석 시작</span>
+              <ArrowRight className="h-3 w-3" />
             </Link>
           </Button>
         </div>
