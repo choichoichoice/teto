@@ -17,58 +17,156 @@ export default function AnalyzePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [developmentTips, setDevelopmentTips] = useState<DevelopmentTip | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useAuth()
 
-  // 페이지 로드 시 로컬 스토리지에서 데이터 복원
-  useEffect(() => {
+  // 사용자별 localStorage 키 생성 (보안 강화)
+  const getUserStorageKey = (key: string, userId?: string) => {
+    const targetUserId = userId || user?.id || 'anonymous'
+    return `${key}_user_${targetUserId}`
+  }
+
+  // 현재 사용자가 아닌 다른 사용자들의 민감한 데이터만 정리 (보안 강화)
+  const clearOtherUsersData = (currentUserId: string) => {
+    console.log('🔐 다른 사용자들의 데이터 보안 정리 중...')
     
-    const savedResult = localStorage.getItem('tetoAnalysisResult')
-    const savedTips = localStorage.getItem('tetoDevelopmentTips')
-    const savedImagePreview = localStorage.getItem('tetoImagePreview')
+    const keysToCheck = [
+      'tetoAnalysisResult',
+      'tetoDevelopmentTips', 
+      'tetoImagePreview'
+    ]
+    
+    // localStorage의 모든 키를 확인
+    const allKeys = Object.keys(localStorage)
+    
+    allKeys.forEach(key => {
+      keysToCheck.forEach(baseKey => {
+        // 현재 사용자 키 패턴과 일치하는지 확인
+        if (key.startsWith(`${baseKey}_user_`) && !key.includes(`_user_${currentUserId}`)) {
+          console.log(`🗑️ 다른 사용자 데이터 제거: ${key}`)
+          localStorage.removeItem(key)
+        }
+      })
+    })
+    
+    console.log('✅ 다른 사용자 데이터 정리 완료')
+  }
 
-    if (savedResult) {
-      try {
-        setAnalysisResult(JSON.parse(savedResult))
-      } catch (error) {
-        console.error('분석 결과 복원 실패:', error)
+  // 완전한 데이터 초기화 (로그아웃 시 사용)
+  const clearAllUserData = () => {
+    console.log('🧹 모든 사용자 데이터 완전 삭제 (로그아웃)')
+    
+    const keysToRemove = [
+      'tetoAnalysisResult',
+      'tetoDevelopmentTips', 
+      'tetoImagePreview'
+    ]
+    
+    Object.keys(localStorage).forEach(key => {
+      keysToRemove.forEach(baseKey => {
+        if (key.startsWith(`${baseKey}_user_`)) {
+          console.log(`🗑️ 완전 제거: ${key}`)
+          localStorage.removeItem(key)
+        }
+      })
+    })
+  }
+
+  // 사용자가 변경될 때 데이터 보안 격리 및 복원
+  useEffect(() => {
+    const newUserId = user?.id || null
+    
+    // 사용자가 변경된 경우
+    if (currentUserId !== newUserId) {
+      console.log(`👤 사용자 변경: ${currentUserId} → ${newUserId}`)
+      
+      // 현재 UI 상태 즉시 초기화 (보안을 위해)
+      setAnalysisResult(null)
+      setDevelopmentTips(null)
+      setImagePreview(null)
+      setSelectedImage(null)
+      
+      if (newUserId) {
+        // 새로운 사용자가 로그인한 경우
+        console.log(`🔐 사용자 ${newUserId} 로그인 - 보안 격리 시작`)
+        
+        // 다른 사용자들의 데이터만 정리 (자신의 데이터는 보존)
+        clearOtherUsersData(newUserId)
+        
+        setCurrentUserId(newUserId)
+        
+        // 현재 사용자의 데이터 복원 시도
+        setTimeout(() => {
+          console.log(`📱 사용자 ${newUserId}의 개인 데이터 복원 시도`)
+          
+          const savedResult = localStorage.getItem(getUserStorageKey('tetoAnalysisResult', newUserId))
+          const savedTips = localStorage.getItem(getUserStorageKey('tetoDevelopmentTips', newUserId))
+          const savedImagePreview = localStorage.getItem(getUserStorageKey('tetoImagePreview', newUserId))
+
+          if (savedResult) {
+            try {
+              console.log('✅ 개인 분석 결과 복원')
+              setAnalysisResult(JSON.parse(savedResult))
+            } catch (error) {
+              console.error('❌ 분석 결과 복원 실패:', error)
+              localStorage.removeItem(getUserStorageKey('tetoAnalysisResult', newUserId))
+            }
+          }
+
+          if (savedTips) {
+            try {
+              console.log('✅ 개인 발전 팁 복원')
+              setDevelopmentTips(JSON.parse(savedTips))
+            } catch (error) {
+              console.error('❌ 발전 팁 복원 실패:', error)
+              localStorage.removeItem(getUserStorageKey('tetoDevelopmentTips', newUserId))
+            }
+          }
+
+          if (savedImagePreview) {
+            console.log('✅ 개인 이미지 미리보기 복원')
+            setImagePreview(savedImagePreview)
+          }
+          
+          console.log('✅ 개인 데이터 복원 완료')
+        }, 100)
+      } else {
+        // 로그아웃된 경우 - 완전한 데이터 정리
+        console.log('🚪 로그아웃 감지 - 모든 데이터 정리')
+        clearAllUserData()
+        setCurrentUserId(null)
       }
     }
+  }, [user?.id, currentUserId])
 
-    if (savedTips) {
-      try {
-        setDevelopmentTips(JSON.parse(savedTips))
-      } catch (error) {
-        console.error('발전 팁 복원 실패:', error)
-      }
-    }
-
-    if (savedImagePreview) {
-      setImagePreview(savedImagePreview)
-    }
-  }, [])
-
-  // 분석 결과가 변경될 때마다 로컬 스토리지에 저장
+  // 분석 결과가 변경될 때마다 현재 사용자의 localStorage에만 저장
   useEffect(() => {
-    if (analysisResult) {
-      localStorage.setItem('tetoAnalysisResult', JSON.stringify(analysisResult))
+    if (analysisResult && user?.id) {
+      const key = getUserStorageKey('tetoAnalysisResult')
+      localStorage.setItem(key, JSON.stringify(analysisResult))
+      console.log(`💾 개인 분석 결과 저장: ${key}`)
     }
-  }, [analysisResult])
+  }, [analysisResult, user?.id])
 
-  // 발전 팁이 변경될 때마다 로컬 스토리지에 저장
+  // 발전 팁이 변경될 때마다 현재 사용자의 localStorage에만 저장
   useEffect(() => {
-    if (developmentTips) {
-      localStorage.setItem('tetoDevelopmentTips', JSON.stringify(developmentTips))
+    if (developmentTips && user?.id) {
+      const key = getUserStorageKey('tetoDevelopmentTips')
+      localStorage.setItem(key, JSON.stringify(developmentTips))
+      console.log(`💾 개인 발전 팁 저장: ${key}`)
     }
-  }, [developmentTips])
+  }, [developmentTips, user?.id])
 
-  // 이미지 미리보기가 변경될 때마다 로컬 스토리지에 저장
+  // 이미지 미리보기가 변경될 때마다 현재 사용자의 localStorage에만 저장
   useEffect(() => {
-    if (imagePreview) {
-      localStorage.setItem('tetoImagePreview', imagePreview)
+    if (imagePreview && user?.id) {
+      const key = getUserStorageKey('tetoImagePreview')
+      localStorage.setItem(key, imagePreview)
+      console.log(`💾 개인 이미지 미리보기 저장: ${key}`)
     }
-  }, [imagePreview])
+  }, [imagePreview, user?.id])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -163,13 +261,25 @@ export default function AnalyzePage() {
     }
   }
 
-
+  const handleReset = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
+    setAnalysisResult(null)
+    setDevelopmentTips(null)
+    
+    // 현재 사용자의 localStorage에서만 제거
+    if (user?.id) {
+      localStorage.removeItem(getUserStorageKey('tetoAnalysisResult'))
+      localStorage.removeItem(getUserStorageKey('tetoDevelopmentTips'))
+      localStorage.removeItem(getUserStorageKey('tetoImagePreview'))
+      console.log('🗑️ 개인 데이터 초기화 완료')
+    }
+  }
 
   const handleShare = async () => {
-    if (!analysisResult || !user) return
+    if (!analysisResult) return
 
     try {
-      // 로그인한 사용자의 결과를 데이터베이스에 저장
       const response = await fetch('/api/share', {
         method: 'POST',
         headers: {
@@ -177,90 +287,40 @@ export default function AnalyzePage() {
         },
         body: JSON.stringify({
           analysisResult,
-          developmentTips,
           imagePreview,
-          userId: user.id
+          developmentTips,
         }),
       })
 
-      if (response.ok) {
-        const { shareId } = await response.json()
-        const shareUrl = `${window.location.origin}/share/${shareId}`
-        
-        if (navigator.share) {
-          try {
-            await navigator.share({
-              title: '테토-에겐 분석 결과',
-              text: `테토-에겐 분석 결과: ${analysisResult.type} ${analysisResult.emoji} (신뢰도 ${analysisResult.confidence}%)`,
-              url: shareUrl,
-            })
-          } catch (error) {
-            console.log('공유가 취소되었습니다.')
-          }
-        } else {
-          // Fallback: 클립보드에 복사
-          navigator.clipboard.writeText(shareUrl)
-          alert('공유 링크가 클립보드에 복사되었습니다!')
-        }
+      if (!response.ok) {
+        throw new Error('공유 링크 생성에 실패했습니다.')
+      }
+
+      const { shareId } = await response.json()
+      const shareUrl = `${window.location.origin}/share/${shareId}`
+      
+      if (navigator.share) {
+        await navigator.share({
+          title: `내 테토-에겐 분석 결과: ${analysisResult.type}`,
+          text: `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`,
+          url: shareUrl,
+        })
       } else {
-        // Supabase가 설정되지 않은 경우 기존 방식 사용
-        const shareText = `테토-에겐 분석 결과: ${analysisResult.type} ${analysisResult.emoji} (신뢰도 ${analysisResult.confidence}%)`
-        
-        if (navigator.share) {
-          try {
-            await navigator.share({
-              title: '테토-에겐 분석 결과',
-              text: shareText,
-              url: window.location.href,
-            })
-          } catch (error) {
-            console.log('공유가 취소되었습니다.')
-          }
-        } else {
-          navigator.clipboard.writeText(shareText)
-          alert('결과가 클립보드에 복사되었습니다!')
-        }
+        await navigator.clipboard.writeText(shareUrl)
+        alert('공유 링크가 클립보드에 복사되었습니다!')
       }
     } catch (error) {
       console.error('공유 오류:', error)
-      // 오류 발생 시 기존 방식 사용
-      const shareText = `테토-에겐 분석 결과: ${analysisResult.type} ${analysisResult.emoji} (신뢰도 ${analysisResult.confidence}%)`
-      
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: '테토-에겐 분석 결과',
-            text: shareText,
-            url: window.location.href,
-          })
-        } catch (error) {
-          console.log('공유가 취소되었습니다.')
-        }
-      } else {
-        navigator.clipboard.writeText(shareText)
-        alert('결과가 클립보드에 복사되었습니다!')
-      }
+      alert('공유 중 오류가 발생했습니다.')
     }
-  }
-
-  const handleReset = () => {
-    setSelectedImage(null)
-    setImagePreview(null)
-    setAnalysisResult(null)
-    setDevelopmentTips(null)
-    
-    // 로컬 스토리지도 함께 초기화
-    localStorage.removeItem('tetoAnalysisResult')
-    localStorage.removeItem('tetoDevelopmentTips')
-    localStorage.removeItem('tetoImagePreview')
   }
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case '테토남': return 'border-blue-400 bg-blue-50'
+      case '테토남': return 'border-red-400 bg-red-50'
       case '테토녀': return 'border-pink-400 bg-pink-50'
-      case '에겐남': return 'border-purple-400 bg-purple-50'
-      case '에겐녀': return 'border-rose-400 bg-rose-50'
+      case '에겐남': return 'border-blue-400 bg-blue-50'
+      case '에겐녀': return 'border-purple-400 bg-purple-50'
       default: return 'border-gray-400 bg-gray-50'
     }
   }
@@ -277,6 +337,13 @@ export default function AnalyzePage() {
           <p className="text-sm sm:text-base md:text-lg text-gray-200 px-4">
             사진을 업로드하여 AI가 분석하는 당신의 성격 유형을 무료로 확인해보세요.
           </p>
+          
+          {/* 개발 모드에서만 보안 상태 표시 */}
+          {process.env.NODE_ENV === 'development' && user && (
+            <div className="mt-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg text-xs mx-auto max-w-sm">
+              🔐 개인 데이터 보안 격리 활성화 (사용자: {user.email?.split('@')[0]})
+            </div>
+          )}
         </div>
 
         {/* 광고 공간 */}
@@ -388,7 +455,7 @@ export default function AnalyzePage() {
               <div className="flex items-center justify-center bg-green-50 px-3 py-2 rounded-lg border border-green-200">
                 <span className="mr-2 text-sm" role="img" aria-label="lock">🔒</span>
                 <p className="text-xs text-green-700 font-medium text-center">
-                  사진은 AI 분석에만 사용되며, 저장되지 않아요
+                  사진은 AI 분석에만 사용되며, 개인별로 완전히 보안 격리되어 저장돼요
                 </p>
               </div>
 
@@ -456,256 +523,177 @@ export default function AnalyzePage() {
                   </div>
                 </div>
 
-                            {/* 성향 순위 */}
-              <div className="mb-6">
-                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-xl border-2 border-purple-300 shadow-lg">
-                  <div className="text-center">
-                    <div className="text-lg font-black text-purple-800 mb-1">
-                      <span className="mr-1">🏆</span>{analysisResult.type} 성향
-                    </div>
-                    <div className="text-xl font-black text-purple-900 tracking-tight">
-                      상위 {Math.floor(Math.random() * 15) + 5}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 성향 스탯 */}
-              <div className="mb-6">
-                <h3 className="text-base font-semibold mb-3">성향 스탯</h3>
-                <div className="space-y-4">
-                  {analysisResult.traits && Object.entries(analysisResult.traits)
-                    .sort(([a], [b]) => {
-                      // 순서 정의: teto, egen, emotion, logic, extraversion, stability, initiative
-                      const order = ['teto', 'egen', 'emotion', 'logic', 'extraversion', 'stability', 'initiative'];
-                      return order.indexOf(a) - order.indexOf(b);
-                    })
-                    .map(([trait, value]) => {
-                    const getTraitInfo = (trait: string) => {
-                      switch(trait) {
-                        case 'teto':
-                          return {
-                            name: '테토 지수',
-                            emoji: '🔥',
-                            desc: '외향적 양기 에너지 - 주도적이고 행동중심적인 성향',
-                            high: '완전 테토 바이브! 현실 지향적이고 추진력 MAX',
-                            low: '내향적이고 감성적인 매력의 소유자'
-                          }
-                        case 'egen':
-                          return {
-                            name: '에겐 지수',
-                            emoji: '🌸',
-                            desc: '내향적 음기 에너지 - 감성적이고 섬세한 성향',
-                            high: '완전 에겐 바이브! 공감능력과 감수성이 뛰어남',
-                            low: '현실적이고 직설적인 매력의 소유자'
-                          }
-                        case 'emotion':
-                          return {
-                            name: '감성 지수',
-                            emoji: '💖',
-                            desc: '감정을 얼마나 풍부하게 표현하고 공감하는지',
-                            high: '감정 표현의 달인! 공감 능력 MAX',
-                            low: '쿨한 매력의 소유자, 이성적 판단력 굿'
-                          }
-                        case 'logic':
-                          return {
-                            name: '논리 지수',
-                            emoji: '🧠',
-                            desc: '상황을 분석하고 합리적으로 판단하는 능력',
-                            high: '완전 논리왕! 문제 해결사 타입',
-                            low: '직감과 감성으로 승부하는 스타일'
-                          }
-                        case 'extraversion':
-                          return {
-                            name: '사교 지수',
-                            emoji: '🎉',
-                            desc: '사람들과 어울리고 에너지를 얻는 정도',
-                            high: '파티의 중심! 사람들이 좋아하는 타입',
-                            low: '혼자만의 시간을 소중히 여기는 매력'
-                          }
-                        case 'stability':
-                          return {
-                            name: '안정 지수',
-                            emoji: '🌊',
-                            desc: '감정 기복 없이 차분함을 유지하는 능력',
-                            high: '멘탈 갑! 흔들리지 않는 바위 같은 존재',
-                            low: '감정이 풍부하고 역동적인 매력'
-                          }
-                        default:
-                          return {
-                            name: '리더 지수',
-                            emoji: '👑',
-                            desc: '상황을 주도하고 이끌어가는 능력',
-                            high: '타고난 리더! 카리스마 폭발',
-                            low: '팀워크를 중시하는 협력형 인재'
-                          }
-                      }
-                    }
-                    
-                    const traitInfo = getTraitInfo(trait)
-                    const isHigh = value >= 70
-                    
-                    return (
-                      <div key={trait} className="bg-gray-50 p-3 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
+                {/* 성향 순위 */}
+                <div className="space-y-3 mb-6">
+                  <h3 className="font-medium text-center text-gray-800 text-sm">성향 분석</h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    {Object.entries(analysisResult.traits)
+                      .filter(([key]) => !['teto', 'egen'].includes(key))
+                      .map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between bg-white p-2 rounded">
+                          <span className="text-xs font-medium">
+                            {key === 'emotion' ? '감정적' :
+                             key === 'logic' ? '논리적' :
+                             key === 'extraversion' ? '외향적' :
+                             key === 'stability' ? '안정적' :
+                             key === 'initiative' ? '주도적' : key}
+                          </span>
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{traitInfo.emoji}</span>
-                            <span className="font-medium text-sm">{traitInfo.name}</span>
+                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                style={{ width: `${value}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs font-bold w-8 text-right">{value}%</span>
                           </div>
-                          <span className="font-bold text-sm text-blue-600">{value}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              value >= 80 ? 'bg-green-500' :
-                              value >= 60 ? 'bg-blue-500' :
-                              value >= 40 ? 'bg-yellow-500' :
-                              'bg-red-400'
-                            }`}
-                            style={{ width: `${value}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-gray-600 mb-1">{traitInfo.desc}</p>
-                        <p className="text-xs font-medium text-gray-800">
-                          {isHigh ? traitInfo.high : traitInfo.low}
-                        </p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* 얼굴로 보는 성격 분석 */}
-              <div className="mb-6">
-                <h3 className="text-base font-semibold mb-3">얼굴로 보는 성격 분석</h3>
-                <ul className="space-y-2">
-                  {(analysisResult.scenarios || []).map((scenario, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <span className="text-blue-500 mt-1 text-xs">•</span>
-                      <span className="text-sm">{scenario}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 소셜 재미 */}
-              <div className="mb-6">
-                <h3 className="text-base font-semibold mb-3">환상의 케미 & 환장의 케미</h3>
-                <div className="space-y-3">
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Image
-                        src={
-                          analysisResult.chemistry.best.type === '테토남' ? '/tetoman.png'
-                          : analysisResult.chemistry.best.type === '테토녀' ? '/tetowoman.png'
-                          : analysisResult.chemistry.best.type === '에겐남' ? '/egenman.png'
-                          : '/egenwoman.png'
-                        }
-                        alt={analysisResult.chemistry.best.type}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
-                      />
-                      <h4 className="font-medium text-green-800 text-sm">
-                        환상의 케미: {analysisResult.chemistry.best.type}
-                      </h4>
-                    </div>
-                    <p className="text-green-700 text-xs">{analysisResult.chemistry.best.reason}</p>
-                  </div>
-                  <div className="bg-red-50 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Image
-                        src={
-                          analysisResult.chemistry.worst.type === '테토남' ? '/tetoman.png'
-                          : analysisResult.chemistry.worst.type === '테토녀' ? '/tetowoman.png'
-                          : analysisResult.chemistry.worst.type === '에겐남' ? '/egenman.png'
-                          : '/egenwoman.png'
-                        }
-                        alt={analysisResult.chemistry.worst.type}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
-                      />
-                      <h4 className="font-medium text-red-800 text-sm">
-                        환장의 케미: {analysisResult.chemistry.worst.type}
-                      </h4>
-                    </div>
-                    <p className="text-red-700 text-xs">{analysisResult.chemistry.worst.reason}</p>
+                      ))}
                   </div>
                 </div>
-              </div>
 
-              {/* 호르몬 강화하기 */}
-              {developmentTips && (
-                <div className="mb-6">
-                  <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-purple-600" />
-                    호르몬 강화하기
+                {/* AI 분석 근거 */}
+                <div className="bg-gray-50 p-3 rounded-lg mb-6">
+                  <h3 className="font-medium text-gray-800 mb-2 text-sm">🤖 AI 분석 포인트</h3>
+                  <div className="space-y-2">
+                    {analysisResult.scenarios.map((scenario, index) => (
+                      <p key={index} className="text-xs text-gray-600 leading-relaxed">
+                        • {scenario}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 오늘의 미션 */}
+                <div className="bg-blue-50 p-3 rounded-lg mb-6">
+                  <h3 className="font-medium text-blue-800 mb-2 text-sm flex items-center">
+                    ✨ 오늘의 미션
                   </h3>
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 p-4 rounded-lg">
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="text-sm font-semibold mb-3 text-gray-800">{developmentTips.title}</h4>
-                        <ul className="space-y-2">
-                          {(developmentTips.tips || []).map((tip, index) => (
-                            <li key={index} className="flex items-start space-x-2">
-                              <span className="text-green-500 font-bold text-sm mt-1">✓</span>
-                              <span className="text-sm leading-relaxed text-gray-700">{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                  <p className="text-blue-700 text-xs">{analysisResult.dailyMission}</p>
+                </div>
 
-                      <div>
-                        <h4 className="text-sm font-semibold mb-3 text-gray-800">추천 상품 키워드:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(developmentTips.shoppingKeywords || []).map((keyword, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium border border-purple-200"
-                            >
-                              {keyword}
-                            </span>
-                          ))}
-                        </div>
+                {/* 연애 케미스트리 */}
+                <div className="mb-6">
+                  <h3 className="font-medium text-gray-800 mb-3 text-sm text-center">💕 연애 케미스트리</h3>
+                  <div className="space-y-3">
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Image
+                          src={
+                            analysisResult.chemistry.best.type === '테토남' ? '/tetoman.png'
+                            : analysisResult.chemistry.best.type === '테토녀' ? '/tetowoman.png'
+                            : analysisResult.chemistry.best.type === '에겐남' ? '/egenman.png'
+                            : '/egenwoman.png'
+                          }
+                          alt={analysisResult.chemistry.best.type}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                        <h4 className="font-medium text-green-800 text-sm">
+                          환상의 케미: {analysisResult.chemistry.best.type}
+                        </h4>
                       </div>
+                      <p className="text-green-700 text-xs">{analysisResult.chemistry.best.reason}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Image
+                          src={
+                            analysisResult.chemistry.worst.type === '테토남' ? '/tetoman.png'
+                            : analysisResult.chemistry.worst.type === '테토녀' ? '/tetowoman.png'
+                            : analysisResult.chemistry.worst.type === '에겐남' ? '/egenman.png'
+                            : '/egenwoman.png'
+                          }
+                          alt={analysisResult.chemistry.worst.type}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                        <h4 className="font-medium text-red-800 text-sm">
+                          환장의 케미: {analysisResult.chemistry.worst.type}
+                        </h4>
+                      </div>
+                      <p className="text-red-700 text-xs">{analysisResult.chemistry.worst.reason}</p>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* 공유 버튼 */}
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={handleShare}
-                  className="flex items-center justify-center text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  결과 공유하기
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  className="flex items-center justify-center text-sm px-4 py-2 border-2 hover:bg-gray-100"
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  다시 분석하기
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                {/* 호르몬 강화하기 */}
+                {developmentTips && (
+                  <div className="mb-6">
+                    <h3 className="font-medium text-gray-800 mb-3 text-sm text-center flex items-center justify-center">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      {developmentTips.title}
+                    </h3>
+                    
+                    {/* 일상 팁 */}
+                    <div className="bg-yellow-50 p-3 rounded-lg mb-4">
+                      <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
+                      <ul className="space-y-1">
+                        {developmentTips.tips.map((tip: string, index: number) => (
+                          <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 추천 상품 키워드 */}
+                    <div className="bg-indigo-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-indigo-800 mb-2 text-sm">🛒 추천 상품 키워드</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {developmentTips.shoppingKeywords.map((keyword: string, index: number) => (
+                          <span 
+                            key={index} 
+                            className="bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 공유하기 버튼 */}
+                <div className="text-center">
+                  <Button
+                    onClick={handleShare}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    결과 공유하기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
-
+        {/* 광고 공간 2 */}
+        <div className="mb-6 flex justify-center px-4">
+          <div className="max-w-sm w-full mx-auto">
+            {/* 두 번째 광고 배너 영역 */}
+            <div className="bg-gray-100 rounded-lg w-full h-20 p-2">
+            </div>
+          </div>
+        </div>
 
         </div>
       </div>
 
-      {/* 로그인 모달 */}
-      <AuthModal 
-        isOpen={showAuthModal} 
+      {/* 인증 모달 */}
+      <AuthModal
+        isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false)
+          // 로그인 성공 후 분석 자동 시작
+          if (selectedImage) {
+            setTimeout(() => {
+              handleAnalyze()
+            }, 500)
+          }
+        }}
         initialTab="login"
       />
     </div>

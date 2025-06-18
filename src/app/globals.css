@@ -56,6 +56,37 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* 모바일 터치 및 클릭 개선 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  /* 터치 가능한 요소들의 최소 크기 보장 */
+  a, button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* iOS Safari에서의 클릭 지연 제거 */
+  a, button, input, select, textarea, [tabindex] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* 텍스트는 선택 가능하게 */
+  p, h1, h2, h3, h4, h5, h6, span:not(.pointer-events-none) {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
 }
 
 body {
@@ -67,5 +98,19 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* 클릭 가능한 요소를 위한 유틸리티 클래스 */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .clickable {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    z-index: 1;
   }
 }

@@ -4,11 +4,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
 import ParticlesBg from "@/components/ParticlesBg";
-
+import AuthStatus from "@/components/AuthStatus";
+import { Suspense } from 'react';
 
 export default function Home() {
   return (
     <div className="flex flex-col">
+      {/* OAuth 상태 표시 컴포넌트 */}
+      <Suspense fallback={null}>
+        <AuthStatus />
+      </Suspense>
+
       {/* 히어로 섹션 */}
       <section className="relative bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <ParticlesBg />

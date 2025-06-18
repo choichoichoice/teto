@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { User, LogOut, Brain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AuthModal from '@/components/auth/AuthModal'
@@ -10,100 +10,134 @@ import { useAuth } from '@/contexts/AuthContext'
 export default function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('login')
-  const [mounted, setMounted] = useState(false)
+  const { user, signOut, refreshAuth } = useAuth()
   
-  // 클라이언트에서만 렌더링되도록 보장
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
-  // useAuth를 안전하게 사용
-  let user: any = null
-  let loading = false
-  let signOut = async () => {}
-  
-  if (mounted) {
+  // 로그아웃 함수
+  const handleSignOut = async () => {
     try {
-      const auth = useAuth()
-      user = auth.user
-      loading = auth.loading
-      signOut = auth.signOut
+      await signOut()
+      alert('로그아웃되었습니다!')
     } catch (error) {
-      console.log('AuthProvider not available')
+      console.error('로그아웃 오류:', error)
+      alert('로그아웃 중 오류가 발생했습니다.')
     }
   }
+
+  // 로그인 성공 시 호출되는 함수
+  const handleAuthSuccess = async () => {
+    try {
+      console.log('Header: 인증 성공, AuthContext 새로고침')
+      await refreshAuth()
+      setShowAuthModal(false)
+    } catch (error) {
+      console.error('Header: AuthContext 새로고침 오류:', error)
+      setShowAuthModal(false)
+    }
+  }
+
   return (
-    <header className="border-b bg-white shadow-sm">
-      <div className="container mx-auto px-2">
-        <div className="flex h-12 items-center justify-between">
+    <header className="border-b-2 border-gray-200 bg-white shadow-lg relative z-40">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
           {/* 왼쪽 영역: 로고와 네비게이션 */}
-          <div className="flex items-center space-x-2">
-            <Link href="/" className="flex items-center space-x-1">
-              <Brain className="h-6 w-6 text-purple-600" />
-              <span className="text-sm font-bold text-gray-900">테토-에겐</span>
+          <div className="flex items-center space-x-6 relative z-50">
+            <Link 
+              href="/" 
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer touch-manipulation clickable"
+              style={{ minHeight: '44px', minWidth: 'auto' }}
+              onClick={() => {
+                console.log('홈 링크 클릭됨')
+              }}
+            >
+              <Brain className="h-8 w-8 text-purple-600 pointer-events-none" />
+              <span className="text-lg font-bold text-gray-900 pointer-events-none">테토-에겐</span>
             </Link>
-            <nav className="flex items-center space-x-2">
+            <nav className="flex items-center space-x-4">
               <Link 
                 href="/" 
-                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-xs"
+                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all font-semibold text-base px-4 py-2 rounded-lg cursor-pointer touch-manipulation clickable block border-2 border-transparent hover:border-purple-200"
+                style={{ minHeight: '44px', minWidth: 'auto' }}
+                onClick={() => {
+                  console.log('홈 네비 클릭됨')
+                }}
               >
                 홈
               </Link>
               <Link 
                 href="/analyze" 
-                className="text-gray-700 hover:text-purple-600 transition-colors font-medium text-xs"
+                className="text-white bg-purple-600 hover:bg-purple-700 transition-all font-semibold text-base px-4 py-2 rounded-lg cursor-pointer touch-manipulation clickable block border-2 border-purple-600 hover:border-purple-700 shadow-md"
+                style={{ minHeight: '44px', minWidth: 'auto' }}
+                onClick={() => {
+                  console.log('분석하기 클릭됨')
+                }}
               >
                 분석하기
               </Link>
             </nav>
           </div>
 
-          {/* 오른쪽 영역: 인증 관련 */}
-          <div className="flex items-center space-x-1">
-            {loading ? (
-              <div className="h-6 w-12 bg-gray-200 animate-pulse rounded"></div>
-            ) : user ? (
-              <div className="flex items-center space-x-1">
-                <div className="flex items-center space-x-1">
-                  <User className="h-3 w-3 text-gray-600" />
-                  <span className="text-xs font-medium text-gray-700 hidden sm:block">
+          {/* 오른쪽 영역: 인증 관련 - 항상 바로 표시 */}
+          <div className="flex items-center space-x-3 relative z-50">
+            {user ? (
+              // 로그인된 사용자
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
+                  <User className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">
                     {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                 </div>
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={signOut}
-                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('로그아웃 클릭됨')
+                    handleSignOut()
+                  }}
+                  className="flex items-center space-x-2 text-sm px-4 py-2 h-auto cursor-pointer touch-manipulation clickable border-2 hover:border-red-300 hover:bg-red-50"
+                  type="button"
+                  style={{ minHeight: '44px', minWidth: 'auto' }}
                 >
-                  <LogOut className="h-3 w-3" />
-                  <span className="hidden sm:block">로그아웃</span>
+                  <LogOut className="h-4 w-4 pointer-events-none" />
+                  <span className="pointer-events-none font-semibold">로그아웃</span>
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-1">
+              // 로그인 안된 사용자 - 항상 바로 표시
+              <div className="flex items-center space-x-3">
                 <Button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('로그인 버튼 클릭됨')
                     setAuthModalTab('login')
                     setShowAuthModal(true)
                   }}
-                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto"
+                  className="flex items-center space-x-2 text-sm px-4 py-2 h-auto cursor-pointer touch-manipulation clickable bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-600 hover:border-blue-700 shadow-md"
                   size="sm"
+                  type="button"
+                  style={{ minHeight: '44px', minWidth: 'auto' }}
                 >
-                  <User className="h-3 w-3" />
-                  <span>로그인</span>
+                  <User className="h-4 w-4 pointer-events-none" />
+                  <span className="pointer-events-none font-semibold">로그인</span>
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('회원가입 버튼 클릭됨')
                     setAuthModalTab('signup')
                     setShowAuthModal(true)
                   }}
-                  className="flex items-center space-x-1 text-xs px-2 py-1 h-auto hidden sm:flex"
+                  className="hidden sm:flex items-center space-x-2 text-sm px-4 py-2 h-auto cursor-pointer touch-manipulation clickable border-2 border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 shadow-md"
                   size="sm"
+                  type="button"
+                  style={{ minHeight: '44px', minWidth: 'auto' }}
                 >
-                  <User className="h-3 w-3" />
-                  <span>회원가입</span>
+                  <User className="h-4 w-4 pointer-events-none" />
+                  <span className="pointer-events-none font-semibold">회원가입</span>
                 </Button>
               </div>
             )}
@@ -114,7 +148,7 @@ export default function Header() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onSuccess={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
         initialTab={authModalTab}
       />
     </header>
