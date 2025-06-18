@@ -298,21 +298,72 @@ export default function AnalyzePage() {
 
       const { shareId } = await response.json()
       const shareUrl = `${window.location.origin}/share/${shareId}`
+      const shareTitle = `내 테토-에겐 분석 결과: ${analysisResult.type}`
+      const shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
       
-      if (navigator.share) {
+      // 다양한 공유 옵션 제공
+      if ((window as any).Kakao && (window as any).Kakao.Share) {
+        // 카카오톡 공유
+        (window as any).Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: shareTitle,
+            description: shareText,
+            imageUrl: imagePreview || `${window.location.origin}/tetoman.png`,
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+          buttons: [
+            {
+              title: '나도 분석하기',
+              link: {
+                mobileWebUrl: window.location.origin,
+                webUrl: window.location.origin,
+              },
+            },
+          ],
+        })
+      } else if (navigator.share) {
+        // 기본 웹 공유 API
         await navigator.share({
-          title: `내 테토-에겐 분석 결과: ${analysisResult.type}`,
-          text: `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`,
+          title: shareTitle,
+          text: shareText,
           url: shareUrl,
         })
       } else {
+        // 클립보드 복사 + 공유 옵션 표시
         await navigator.clipboard.writeText(shareUrl)
-        alert('공유 링크가 클립보드에 복사되었습니다!')
+        
+        // 공유 옵션 모달 표시
+        const shareOptions = [
+          { name: '카카오톡', url: `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}` },
+          { name: '페이스북', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
+          { name: '트위터', url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}` },
+        ]
+        
+        const shareChoice = confirm('링크가 클립보드에 복사되었습니다!\n\n카카오톡으로 공유하시겠어요?\n확인: 카카오톡 공유\n취소: 다른 방법으로 공유')
+        
+        if (shareChoice) {
+          window.open(shareOptions[0].url, '_blank', 'width=600,height=400')
+        }
       }
     } catch (error) {
       console.error('공유 오류:', error)
       alert('공유 중 오류가 발생했습니다.')
     }
+  }
+
+  // 호르몬 강화하기 페이지로 이동
+  const handleHormoneBoost = () => {
+    if (!analysisResult || !developmentTips) return
+    
+    // 분석 결과에 따른 맞춤 추천 페이지로 이동
+    const searchQuery = developmentTips.shoppingKeywords.join(' ')
+    const searchUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(searchQuery)}`
+    
+    window.open(searchUrl, '_blank')
   }
 
   const getTypeColor = (type: string) => {
@@ -654,14 +705,23 @@ export default function AnalyzePage() {
                   </div>
                 )}
 
-                {/* 공유하기 버튼 */}
-                <div className="text-center">
+                {/* 공유하기 및 호르몬 강화하기 버튼 */}
+                <div className="text-center space-y-3">
                   <Button
                     onClick={handleShare}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
                   >
                     <Share2 className="mr-2 h-4 w-4" />
                     결과 공유하기
+                  </Button>
+                  
+                  {/* 호르몬 강화하기 버튼 */}
+                  <Button
+                    onClick={handleHormoneBoost}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-sm"
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    호르몬 강화하기 🛒
                   </Button>
                 </div>
               </CardContent>
