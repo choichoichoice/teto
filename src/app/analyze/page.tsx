@@ -280,6 +280,7 @@ export default function AnalyzePage() {
     if (!analysisResult) return
 
     try {
+      // 1단계: 데이터베이스 공유 시도 (Supabase가 설정된 경우)
       const response = await fetch('/api/share', {
         method: 'POST',
         headers: {
@@ -289,69 +290,120 @@ export default function AnalyzePage() {
           analysisResult,
           imagePreview,
           developmentTips,
+          userId: user?.id || null, // userId 없어도 허용
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('공유 링크 생성에 실패했습니다.')
-      }
-
-      const { shareId } = await response.json()
-      const shareUrl = `${window.location.origin}/share/${shareId}`
-      const shareTitle = `내 테토-에겐 분석 결과: ${analysisResult.type}`
-      const shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
+      let shareUrl
+      let shareTitle = `내 테토-에겐 분석 결과: ${analysisResult.type}`
+      let shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
       
-      // 다양한 공유 옵션 제공
+      if (response.ok) {
+        // Supabase 공유 성공
+        const { shareId } = await response.json()
+        shareUrl = `${window.location.origin}/share/${shareId}`
+        console.log('✅ 데이터베이스 공유 성공:', shareUrl)
+      } else {
+        // Supabase 실패 시 로컬 공유 방식 사용
+        console.log('ℹ️ 데이터베이스 공유 실패, 로컬 공유 방식 사용')
+        
+        // 결과를 임시 localStorage에 저장하고 현재 페이지 URL 공유
+        const tempShareData = {
+          analysisResult,
+          imagePreview,
+          developmentTips,
+          timestamp: Date.now()
+        }
+        localStorage.setItem('tempShareData', JSON.stringify(tempShareData))
+        shareUrl = window.location.href
+        shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! (신뢰도 ${analysisResult.confidence}%) 당신도 분석해보세요!`
+      }
+      
+      // 2단계: 공유 방법 선택
+      // 카카오톡 공유 가능한지 확인
       if ((window as any).Kakao && (window as any).Kakao.Share) {
-        // 카카오톡 공유
-        (window as any).Kakao.Share.sendDefault({
-          objectType: 'feed',
-          content: {
-            title: shareTitle,
-            description: shareText,
-            imageUrl: imagePreview || `${window.location.origin}/tetoman.png`,
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
-            },
-          },
-          buttons: [
-            {
-              title: '나도 분석하기',
+        try {
+          console.log('🔄 카카오톡 공유 시도...')
+          
+          // 카카오톡 공유
+          await (window as any).Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: shareTitle,
+              description: shareText,
+              imageUrl: imagePreview || `${window.location.origin}/tetoman.png`,
               link: {
-                mobileWebUrl: window.location.origin,
-                webUrl: window.location.origin,
+                mobileWebUrl: shareUrl,
+                webUrl: shareUrl,
               },
             },
-          ],
-        })
-      } else if (navigator.share) {
-        // 기본 웹 공유 API
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        })
-      } else {
-        // 클립보드 복사 + 공유 옵션 표시
+            buttons: [
+              {
+                title: '나도 분석하기',
+                link: {
+                  mobileWebUrl: window.location.origin,
+                  webUrl: window.location.origin,
+                },
+              },
+            ],
+          })
+          console.log('✅ 카카오톡 공유 완료')
+          alert('카카오톡으로 공유되었습니다! 🎉')
+          return
+        } catch (kakaoError) {
+          console.error('카카오톡 공유 실패:', kakaoError)
+        }
+      }
+      
+      // 3단계: 웹 기본 공유 API 시도
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl,
+          })
+          console.log('✅ 웹 공유 완료')
+          return
+        } catch (shareError) {
+          if (shareError.name !== 'AbortError') {
+            console.error('웹 공유 실패:', shareError)
+          }
+        }
+      }
+      
+      // 4단계: 폴백 - 클립보드 복사 + SNS 선택
+      try {
         await navigator.clipboard.writeText(shareUrl)
+        console.log('✅ 클립보드 복사 완료')
         
-        // 공유 옵션 모달 표시
+        // 공유 옵션 모달
         const shareOptions = [
           { name: '카카오톡', url: `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}` },
           { name: '페이스북', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
           { name: '트위터', url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}` },
         ]
         
-        const shareChoice = confirm('링크가 클립보드에 복사되었습니다!\n\n카카오톡으로 공유하시겠어요?\n확인: 카카오톡 공유\n취소: 다른 방법으로 공유')
+        const userChoice = confirm(`🔗 링크가 클립보드에 복사되었습니다!\n\n어떤 방법으로 공유하시겠어요?\n\n✅ 확인: 카카오톡으로 공유\n❌ 취소: 직접 붙여넣기`)
         
-        if (shareChoice) {
-          window.open(shareOptions[0].url, '_blank', 'width=600,height=400')
+        if (userChoice) {
+          // 카카오톡 웹 공유 페이지 열기
+          const kakaoShareUrl = `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+          window.open(kakaoShareUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes')
+          console.log('✅ 카카오톡 웹 공유 페이지 열림')
+        } else {
+          alert('클립보드에 복사된 링크를 원하는 곳에 붙여넣어 주세요! 📋')
         }
+      } catch (clipboardError) {
+        console.error('클립보드 복사 실패:', clipboardError)
+        
+        // 마지막 수단: 프롬프트로 URL 표시
+        prompt('링크를 복사해서 공유해주세요:', shareUrl)
       }
+      
     } catch (error) {
-      console.error('공유 오류:', error)
-      alert('공유 중 오류가 발생했습니다.')
+      console.error('공유 총 오류:', error)
+      alert('공유 중 오류가 발생했습니다. 다시 시도해주세요.')
     }
   }
 

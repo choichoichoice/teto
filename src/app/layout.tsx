@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
+import KakaoSDK from "@/components/KakaoSDK";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +23,14 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
+        {/* 카카오 SDK 로드 */}
+        <Script 
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
+          strategy="beforeInteractive"
+        />
+        
         <Providers>
+          <KakaoSDK />
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">

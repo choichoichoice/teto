@@ -14,24 +14,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { analysisResult, developmentTips, imagePreview, userId } = body
 
-    // 사용자 ID가 없으면 오류 반환
-    if (!userId) {
-      return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
-        { status: 401 }
-      )
-    }
-
     // 고유 ID 생성
     const shareId = uuidv4()
 
-    // 데이터베이스에 저장
+    // 데이터베이스에 저장 (userId는 선택사항)
     const { data, error } = await supabase
       .from('shared_results')
       .insert([
         {
           id: shareId,
-          user_id: userId,
+          user_id: userId || null, // userId 없어도 허용
           analysis_result: analysisResult,
           development_tips: developmentTips,
           image_preview: imagePreview,

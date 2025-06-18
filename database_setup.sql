@@ -1,6 +1,7 @@
 -- 공유된 분석 결과를 저장하는 테이블
 CREATE TABLE shared_results (
   id UUID PRIMARY KEY,
+  user_id UUID, -- 선택사항 (NULL 허용)
   analysis_result JSONB NOT NULL,
   development_tips JSONB,
   image_preview TEXT,
@@ -9,6 +10,7 @@ CREATE TABLE shared_results (
 
 -- 인덱스 생성 (성능 향상)
 CREATE INDEX idx_shared_results_created_at ON shared_results(created_at);
+CREATE INDEX idx_shared_results_user_id ON shared_results(user_id);
 
 -- RLS (Row Level Security) 비활성화 (공개 읽기 허용)
 ALTER TABLE shared_results ENABLE ROW LEVEL SECURITY;
