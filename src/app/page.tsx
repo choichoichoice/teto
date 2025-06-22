@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Camera, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
 import ParticlesBg from "@/components/ParticlesBg";
 import AuthStatus from "@/components/AuthStatus";
+import AdBanner from "@/components/AdBanner";
 import { Suspense } from 'react';
 
 export default function Home() {
@@ -27,7 +28,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-sm sm:text-base mb-4 text-gray-200 leading-relaxed px-2">
-              AI가 사진을 분석하여 성격 유형을 무료로 알려드립니다.
+              AI가 사진을 분석하여 테토-에겐 유형을 무료로 알려드립니다.
             </p>
             <div className="flex justify-center">
               <Button 
@@ -46,10 +47,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 공간 1 */}
-      <section className="py-2 bg-white">
-        <div className="container mx-auto px-2">
-          <div className="mx-auto h-[50px] bg-gray-100 rounded"></div>
+      {/* 광고 영역 1 */}
+      <section className="py-4 bg-white">
+        <div className="container mx-auto px-4">
+          <AdBanner key="home-ad-1" className="max-w-4xl mx-auto" />
         </div>
       </section>
 
@@ -73,7 +74,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="pt-0">
                 <CardDescription className="text-sm text-gray-600 leading-tight">
-                  AI로 얼굴 분석하여 성격 유형 판단
+                  AI로 얼굴 분석하여 테토-에겐 유형 판단
                 </CardDescription>
               </CardContent>
             </Card>
@@ -109,10 +110,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 공간 2 */}
-      <section className="py-2 bg-white">
-        <div className="container mx-auto px-2">
-          <div className="mx-auto h-[60px] bg-gray-100 rounded"></div>
+      {/* 광고 영역 2 */}
+      <section className="py-4 bg-white">
+        <div className="container mx-auto px-4">
+          <AdBanner key="home-ad-2" className="max-w-4xl mx-auto" />
         </div>
       </section>
 
@@ -121,7 +122,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 px-2">
-              4가지 성격 유형을 알아보세요
+              4가지 테토-에겐 유형을 알아보세요
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
               각 유형마다 고유한 특성과 매력이 있습니다
@@ -192,10 +193,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 공간 3 */}
-      <section className="py-2 bg-gray-50">
-        <div className="container mx-auto px-2">
-          <div className="mx-auto h-[55px] bg-gray-200 rounded"></div>
+      {/* 광고 영역 3 */}
+      <section className="py-4 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <AdBanner key="home-ad-3" className="max-w-4xl mx-auto" />
         </div>
       </section>
 
@@ -203,7 +204,7 @@ export default function Home() {
       <section className="py-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
         <div className="container mx-auto px-2 text-center">
           <h2 className="text-base sm:text-lg md:text-xl font-bold mb-2 px-2">
-            지금 바로 성격 유형을 무료로 알아보세요!
+            지금 바로 테토-에겐 유형을 무료로 알아보세요!
           </h2>
           <p className="text-sm mb-4 max-w-xs mx-auto leading-relaxed px-2">
             한 장의 사진으로 성격과 강점을 발견하세요.
@@ -219,6 +220,13 @@ export default function Home() {
               <ArrowRight className="h-3 w-3" />
             </Link>
           </Button>
+        </div>
+      </section>
+
+      {/* 광고 영역 4 */}
+      <section className="py-4 bg-white">
+        <div className="container mx-auto px-4">
+          <AdBanner key="home-ad-4" className="max-w-4xl mx-auto" />
         </div>
       </section>
     </div>

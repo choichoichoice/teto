@@ -1,47 +1,83 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 
-import { ExternalLink } from 'lucide-react'
+declare global {
+  interface Window {
+    adsbygoogle: any[]
+  }
+}
 
 interface AdBannerProps {
-  size?: 'small' | 'medium' | 'large'
-  position?: 'horizontal' | 'vertical'
   className?: string
+  style?: React.CSSProperties
+  slot?: string
 }
 
 export default function AdBanner({ 
-  size = 'medium', 
-  position = 'horizontal',
-  className = '' 
+  className, 
+  style, 
+  slot = "3552030876" 
 }: AdBannerProps) {
-  const sizeClasses = {
-    small: 'h-24',
-    medium: 'h-32',
-    large: 'h-48'
-  }
+  const adRef = useRef<HTMLDivElement>(null)
+  const isInitialized = useRef(false)
 
-  const positionClasses = {
-    horizontal: 'w-full',
-    vertical: 'w-80 h-[754px]'
-  }
+  useEffect(() => {
+    // 이미 초기화되었거나 adRef가 없으면 실행하지 않음
+    if (isInitialized.current || !adRef.current) return
+
+    try {
+      // AdSense 스크립트가 이미 로드되었는지 확인
+      let script = document.querySelector('script[src*="adsbygoogle.js"]') as HTMLScriptElement
+      
+      if (!script) {
+        // 스크립트가 없으면 동적으로 추가
+        script = document.createElement('script')
+        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3689089253422901'
+        script.async = true
+        script.crossOrigin = 'anonymous'
+        document.head.appendChild(script)
+      }
+
+      // 스크립트 로딩 후 광고 초기화
+      const initAd = () => {
+        if (typeof window !== 'undefined' && !isInitialized.current) {
+          try {
+            ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+            isInitialized.current = true
+          } catch (error) {
+            console.error('AdSense 초기화 오류:', error)
+          }
+        }
+      }
+
+      // 짧은 딜레이 후 초기화 (스크립트 로딩 시간 확보)
+      const timer = setTimeout(initAd, 100)
+      
+      return () => {
+        clearTimeout(timer)
+      }
+
+    } catch (error) {
+      console.error('AdSense 로딩 오류:', error)
+    }
+
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      isInitialized.current = false
+    }
+  }, [])
 
   return (
-    <div className={`
-      ${sizeClasses[size]} 
-      ${positionClasses[position]} 
-      bg-gradient-to-r from-gray-100 to-gray-200 
-      border-2 border-dashed border-gray-300 
-      flex items-center justify-center 
-      hover:border-gray-400 transition-colors
-      cursor-pointer
-      rounded-lg
-      ${className}
-    `}>
-      <div className="text-center text-gray-500">
-        <ExternalLink className="h-8 w-8 mx-auto mb-2" />
-        <p className="text-lg font-medium">광고 영역</p>
-        <p className="text-sm">Advertisement</p>
-      </div>
+    <div className={className} style={style} ref={adRef}>
+      <ins 
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client="ca-pub-3689089253422901"
+        data-ad-slot={slot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
     </div>
   )
 } 

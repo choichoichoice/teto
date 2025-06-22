@@ -7,6 +7,7 @@ import { Upload, Camera, Loader2, Share2, RefreshCw, TrendingUp, ImagePlus } fro
 import { AnalysisResult, DevelopmentTip } from '@/types'
 import Image from 'next/image'
 import ParticlesBg from "@/components/ParticlesBg"
+import AdBanner from "@/components/AdBanner"
 
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/auth/AuthModal'
@@ -296,7 +297,7 @@ export default function AnalyzePage() {
 
       let shareUrl
       let shareTitle = `내 테토-에겐 분석 결과: ${analysisResult.type}`
-      let shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
+      let shareText = `AI가 분석한 내 테토-에겐 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
       
       if (response.ok) {
         // Supabase 공유 성공
@@ -304,19 +305,12 @@ export default function AnalyzePage() {
         shareUrl = `${window.location.origin}/share/${shareId}`
         console.log('✅ 데이터베이스 공유 성공:', shareUrl)
       } else {
-        // Supabase 실패 시 로컬 공유 방식 사용
-        console.log('ℹ️ 데이터베이스 공유 실패, 로컬 공유 방식 사용')
+        // Supabase 실패 시 사용자에게 명확하게 알림
+        console.log('❌ 데이터베이스 공유 실패')
+        const errorData = await response.json().catch(() => null)
         
-        // 결과를 임시 localStorage에 저장하고 현재 페이지 URL 공유
-        const tempShareData = {
-          analysisResult,
-          imagePreview,
-          developmentTips,
-          timestamp: Date.now()
-        }
-        localStorage.setItem('tempShareData', JSON.stringify(tempShareData))
-        shareUrl = window.location.href
-        shareText = `AI가 분석한 내 성격 유형은 ${analysisResult.type}! (신뢰도 ${analysisResult.confidence}%) 당신도 분석해보세요!`
+        alert(`❌ 공유 기능을 사용할 수 없습니다.\n\n문제: 데이터베이스 연결이 설정되지 않았습니다.\n해결방법: 관리자에게 Supabase 설정을 요청해주세요.\n\n현재는 스크린샷을 찍어서 직접 공유해주세요! 📸`)
+        return
       }
       
       // 2단계: 공유 방법 선택
@@ -438,7 +432,7 @@ export default function AnalyzePage() {
             테토-에겐 성격 분석
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-gray-200 px-4">
-            사진을 업로드하여 AI가 분석하는 당신의 성격 유형을 무료로 확인해보세요.
+            사진을 업로드하여 AI가 분석하는 당신의 테토-에겐 유형을 무료로 확인해보세요.
           </p>
           
           {/* 개발 모드에서만 보안 상태 표시 */}
@@ -449,12 +443,10 @@ export default function AnalyzePage() {
           )}
         </div>
 
-        {/* 광고 공간 */}
+        {/* 광고 영역 1 */}
         <div className="mb-6 flex justify-center px-4">
           <div className="max-w-sm w-full mx-auto">
-            {/* 모바일 광고 배너 영역 - 직사각형 */}
-            <div className="bg-gray-100 rounded-lg w-full h-20 p-2">
-            </div>
+            <AdBanner key="analyze-ad-1" className="w-full" />
           </div>
         </div>
 
@@ -781,12 +773,10 @@ export default function AnalyzePage() {
           )}
         </div>
 
-        {/* 광고 공간 2 */}
+        {/* 광고 영역 2 */}
         <div className="mb-6 flex justify-center px-4">
           <div className="max-w-sm w-full mx-auto">
-            {/* 두 번째 광고 배너 영역 */}
-            <div className="bg-gray-100 rounded-lg w-full h-20 p-2">
-            </div>
+            <AdBanner key="analyze-ad-2" className="w-full" />
           </div>
         </div>
 

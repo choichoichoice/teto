@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="text-xs font-bold text-gray-900">테토-에겐 분석기</span>
             </div>
             <p className="text-xs text-gray-600 mb-2">
-              AI가 사진으로 성격 유형을 분석해드립니다.
+              AI가 사진으로 테토-에겐 유형을 분석해드립니다.
             </p>
             <div className="flex items-center justify-center space-x-1 text-xs text-gray-500">
               <span>Made with</span>
