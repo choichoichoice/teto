@@ -384,7 +384,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'lo
                 테토-에겐 분석기
               </CardTitle>
               <CardDescription className="text-gray-600 mt-2">
-                로그인하고 성격 분석을 시작해보세요
+                로그인하고 테토-에겐 성향 분석을 시작해 보세요
               </CardDescription>
             </div>
           </CardHeader>
