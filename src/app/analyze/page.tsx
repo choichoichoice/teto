@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Upload, Camera, Loader2, Share2, RefreshCw, TrendingUp, ImagePlus } from 'lucide-react'
+import { Upload, Camera, Loader2, Share2, RefreshCw, TrendingUp, ImagePlus, Download } from 'lucide-react'
 import { AnalysisResult, DevelopmentTip } from '@/types'
 import Image from 'next/image'
 import ParticlesBg from "@/components/ParticlesBg"
 import AdBanner from "@/components/AdBanner"
+import html2canvas from 'html2canvas'
 
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/auth/AuthModal'
@@ -27,6 +28,10 @@ export default function AnalyzePage() {
   // 일일 분석 제한 관련 상태
   const [dailyAnalysisCount, setDailyAnalysisCount] = useState(0)
   const [isAnalysisLimitReached, setIsAnalysisLimitReached] = useState(false)
+  
+  // 이미지 저장 관련 상태
+  const [isSavingImage, setIsSavingImage] = useState(false)
+  const analysisResultRef = useRef<HTMLDivElement>(null)
   
   const { user } = useAuth()
 
@@ -512,33 +517,94 @@ export default function AnalyzePage() {
     }
   }
 
-  // 분석결과 저장하기 - 로컬에 개인 분석 결과 저장
-  const handleSaveResult = () => {
-    if (!analysisResult) return
+  // 분석결과를 이미지로 저장하기 - 핸드폰 갤러리에 저장 가능
+  const handleSaveResult = async () => {
+    if (!analysisResult || !analysisResultRef.current) return
+    
+    setIsSavingImage(true)
     
     try {
-      const savedResults = JSON.parse(localStorage.getItem('savedAnalysisResults') || '[]')
+      console.log('📸 분석결과 이미지 생성 시작...')
       
-      const newResult = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-        analysisResult,
-        developmentTips,
-        imagePreview,
-        savedAt: new Date().toLocaleString('ko-KR')
+      // html2canvas로 분석결과 영역을 이미지로 캡처
+      const canvas = await html2canvas(analysisResultRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // 고해상도
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: analysisResultRef.current.scrollWidth,
+        height: analysisResultRef.current.scrollHeight,
+        onclone: (clonedDoc) => {
+          // 클론된 문서에서 스타일 조정
+          const clonedElement = clonedDoc.querySelector('[data-analysis-result]') as HTMLElement
+          if (clonedElement) {
+            clonedElement.style.padding = '20px'
+            clonedElement.style.margin = '0'
+            clonedElement.style.maxWidth = 'none'
+            clonedElement.style.boxShadow = 'none'
+            clonedElement.style.borderRadius = '12px'
+          }
+        }
+      })
+      
+      // Canvas에 워터마크 추가
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        // 하단에 브랜딩 텍스트 추가
+        ctx.fillStyle = '#6366f1'
+        ctx.font = 'bold 24px sans-serif'
+        ctx.textAlign = 'center'
+        const watermarkText = '테토-에겐 AI 분석 | teto-egen.com'
+        const textX = canvas.width / 2
+        const textY = canvas.height - 30
+        
+        // 배경 사각형
+        const textMetrics = ctx.measureText(watermarkText)
+        const textWidth = textMetrics.width
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+        ctx.fillRect(textX - textWidth/2 - 10, textY - 20, textWidth + 20, 30)
+        
+        // 텍스트
+        ctx.fillStyle = '#6366f1'
+        ctx.fillText(watermarkText, textX, textY)
       }
       
-      // 최신 10개만 유지
-      const updatedResults = [newResult, ...savedResults].slice(0, 10)
-      
-      localStorage.setItem('savedAnalysisResults', JSON.stringify(updatedResults))
-      
-      console.log('💾 분석 결과 저장 완료')
-      alert('분석 결과가 저장되었습니다! 📁\n(최근 10개까지 보관됩니다)')
+      // Canvas를 Blob으로 변환
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('이미지 생성에 실패했습니다.')
+        }
+        
+        // 다운로드 링크 생성
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        
+        // 파일명 생성 (분석 타입과 날짜 포함)
+        const today = new Date().toISOString().split('T')[0]
+        const fileName = `테토에겐_${analysisResult.type}_${today}.png`
+        link.download = fileName
+        
+        // 자동 다운로드 실행
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // 메모리 정리
+        URL.revokeObjectURL(url)
+        
+        console.log('✅ 이미지 저장 완료:', fileName)
+        alert('📱 분석결과가 이미지로 저장되었습니다!\n\n핸드폰 갤러리에서 확인해보세요! 🎉')
+        
+      }, 'image/png', 0.95) // PNG 형식, 95% 품질
       
     } catch (error) {
-      console.error('분석 결과 저장 실패:', error)
-      alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.')
+      console.error('이미지 저장 실패:', error)
+      alert('이미지 저장 중 오류가 발생했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSavingImage(false)
     }
   }
 
@@ -747,7 +813,11 @@ export default function AnalyzePage() {
         {/* 분석 결과 섹션 - 항상 표시되지만 내용은 조건부 */}
         <div className={`mb-8 min-h-[800px] ${!analysisResult ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
           {analysisResult && (
-            <Card className={`border-2 ${getTypeColor(analysisResult.type)}`}>
+            <Card 
+              ref={analysisResultRef}
+              data-analysis-result
+              className={`border-2 ${getTypeColor(analysisResult.type)}`}
+            >
               <CardHeader>
                 <CardTitle className="text-center text-lg">
                   {analysisResult.title}
@@ -924,10 +994,20 @@ export default function AnalyzePage() {
                   
                   <Button
                     onClick={handleSaveResult}
+                    disabled={isSavingImage}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
                   >
-                    <ImagePlus className="mr-2 h-4 w-4" />
-                    분석결과 저장하기
+                    {isSavingImage ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        이미지 생성 중...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        갤러리에 이미지 저장
+                      </>
+                    )}
                   </Button>
                   
                   {/* 호르몬 강화하기 버튼 */}
