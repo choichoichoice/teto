@@ -1241,9 +1241,9 @@ export default function AnalyzePage() {
                          {/* 일상 팁 */}
                          <div className="bg-yellow-50 p-3 rounded-lg mb-4">
                            <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
-                           <ul className="space-y-1">
+                           <ul className="space-y-3">
                              {developmentTips.tips.map((tip: string, index: number) => (
-                               <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
+                               <li key={index} className="text-yellow-700 text-xs leading-relaxed">• {tip}</li>
                              ))}
                            </ul>
                          </div>
