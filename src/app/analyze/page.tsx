@@ -532,13 +532,25 @@ export default function AnalyzePage() {
     try {
       console.log('📱 모바일 최적화 이미지 생성 시작...')
       
+      // 📱 이미지 로딩 완료 대기 (깨짐 방지)
+      const images = analysisResultRef.current.querySelectorAll('img')
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve()
+        return new Promise((resolve) => {
+          img.onload = () => resolve(true)
+          img.onerror = () => resolve(true) // 에러여도 계속 진행
+        })
+      }))
+      
       // 📱 모바일 화면에 맞는 최적화된 이미지 생성
       const isMobileDevice = isMobile()
       const canvas = await html2canvas(analysisResultRef.current, {
         backgroundColor: '#ffffff',
-        scale: isMobileDevice ? 1.5 : 2, // 모바일은 적당한 해상도로
+        scale: isMobileDevice ? 1.5 : 2,
         useCORS: true,
         allowTaint: true,
+        foreignObjectRendering: false, // SVG 렌더링 문제 방지
+        imageTimeout: 10000, // 이미지 로딩 타임아웃 증가
         scrollX: 0,
         scrollY: 0,
         width: analysisResultRef.current.scrollWidth,
@@ -553,15 +565,42 @@ export default function AnalyzePage() {
             clonedElement.style.borderRadius = '12px'
             clonedElement.style.border = '1px solid #e5e7eb'
             
-            // Next.js 이미지 최적화 문제 해결
+            // 🔧 이미지 깨짐 완벽 방지 처리
             const images = clonedElement.querySelectorAll('img')
-            images.forEach(img => {
-              // srcset 제거하고 기본 src만 사용
+            images.forEach((img, index) => {
+              // Next.js 최적화 속성 모두 제거
               img.removeAttribute('srcset')
-              img.style.imageRendering = 'auto'
+              img.removeAttribute('sizes')
+              img.removeAttribute('loading')
+              img.removeAttribute('decoding')
+              img.removeAttribute('fetchpriority')
+              
+              // 원본 이미지 경로로 변경
+              const src = img.getAttribute('src')
+              if (src && src.includes('/_next/image')) {
+                // Next.js 최적화된 이미지를 원본 경로로 변경
+                const urlParams = new URLSearchParams(src.split('?')[1])
+                const originalUrl = urlParams.get('url')
+                if (originalUrl) {
+                  img.src = originalUrl
+                }
+              }
+              
+              // 강제 스타일 적용
+              img.style.imageRendering = 'crisp-edges'
               img.style.objectFit = 'contain'
               img.style.maxWidth = '100%'
+              img.style.maxHeight = '100%'
+              img.style.width = 'auto'
               img.style.height = 'auto'
+              img.style.display = 'block'
+              img.style.margin = '0 auto'
+              
+              // 크기 고정 (캐릭터 이미지들)
+              if (img.alt && (img.alt.includes('테토') || img.alt.includes('에겐'))) {
+                img.style.width = '80px'
+                img.style.height = '80px'
+              }
             })
             
             // 불필요한 영역 제거
