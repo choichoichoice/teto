@@ -517,7 +517,12 @@ export default function AnalyzePage() {
     }
   }
 
-  // 분석결과를 이미지로 저장하기 - 핸드폰 갤러리에 저장 가능
+  // 모바일 기기 감지
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }
+
+  // 분석결과를 이미지로 저장하기 - 모바일/데스크톱 별 다른 방식
   const handleSaveResult = async () => {
     if (!analysisResult || !analysisResultRef.current) return
     
@@ -571,16 +576,80 @@ export default function AnalyzePage() {
         ctx.fillText(watermarkText, textX, textY)
       }
       
-      // Canvas를 Blob으로 변환
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          throw new Error('이미지 생성에 실패했습니다.')
+      // Canvas를 Data URL로 변환
+      const dataURL = canvas.toDataURL('image/png', 0.95)
+      
+      // 모바일과 데스크톱 구분하여 처리
+      if (isMobile()) {
+        // 📱 모바일: 새 창에서 이미지 열기 (길게 눌러서 저장 가능)
+        const newWindow = window.open()
+        if (newWindow) {
+          newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>테토-에겐 분석결과</title>
+              <style>
+                body {
+                  margin: 0;
+                  padding: 20px;
+                  background: #f5f5f5;
+                  font-family: sans-serif;
+                  text-align: center;
+                }
+                .container {
+                  max-width: 100%;
+                  margin: 0 auto;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 12px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                  margin-bottom: 20px;
+                }
+                .instruction {
+                  background: #e0f2fe;
+                  padding: 15px;
+                  border-radius: 8px;
+                  margin: 20px 0;
+                  color: #0277bd;
+                }
+                .instruction h3 {
+                  margin: 0 0 10px 0;
+                  font-size: 16px;
+                }
+                .instruction p {
+                  margin: 5px 0;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <img src="${dataURL}" alt="테토-에겐 분석결과" />
+                <div class="instruction">
+                  <h3>📱 갤러리에 저장하는 방법</h3>
+                  <p><strong>1.</strong> 위 이미지를 길게 눌러주세요</p>
+                  <p><strong>2.</strong> "이미지 저장" 또는 "사진에 저장" 선택</p>
+                  <p><strong>3.</strong> 갤러리에서 확인하세요! 🎉</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `)
+          newWindow.document.close()
         }
         
-        // 다운로드 링크 생성
-        const url = URL.createObjectURL(blob)
+        console.log('✅ 모바일 이미지 저장 페이지 열림')
+        alert('📱 새 창에서 이미지가 열렸습니다!\n\n이미지를 길게 눌러서 갤러리에 저장해주세요! 🎉')
+        
+      } else {
+        // 💻 데스크톱: 자동 다운로드
         const link = document.createElement('a')
-        link.href = url
+        link.href = dataURL
         
         // 파일명 생성 (분석 타입과 날짜 포함)
         const today = new Date().toISOString().split('T')[0]
@@ -592,13 +661,9 @@ export default function AnalyzePage() {
         link.click()
         document.body.removeChild(link)
         
-        // 메모리 정리
-        URL.revokeObjectURL(url)
-        
-        console.log('✅ 이미지 저장 완료:', fileName)
-        alert('📱 분석결과가 이미지로 저장되었습니다!\n\n핸드폰 갤러리에서 확인해보세요! 🎉')
-        
-      }, 'image/png', 0.95) // PNG 형식, 95% 품질
+        console.log('✅ 데스크톱 이미지 다운로드 완료:', fileName)
+        alert('💻 분석결과가 이미지로 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 🎉')
+      }
       
     } catch (error) {
       console.error('이미지 저장 실패:', error)
