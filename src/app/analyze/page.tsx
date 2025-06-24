@@ -523,19 +523,20 @@ export default function AnalyzePage() {
   }
 
   // 분석결과를 이미지로 저장하기 - 모바일/데스크톱 별 다른 방식
-  // 🚀 혁신적인 멀티 플랫폼 저장 시스템
+  // 📱 모바일 최적화 저장 시스템
   const handleSaveResult = async () => {
     if (!analysisResult || !analysisResultRef.current) return
     
     setIsSavingImage(true)
     
     try {
-      console.log('🚀 TESLA급 이미지 생성 시작...')
+      console.log('📱 모바일 최적화 이미지 생성 시작...')
       
-      // 🎯 초고해상도 이미지 생성
+      // 📱 모바일 화면에 맞는 최적화된 이미지 생성
+      const isMobileDevice = isMobile()
       const canvas = await html2canvas(analysisResultRef.current, {
         backgroundColor: '#ffffff',
-        scale: 3, // 더 고해상도로 업그레이드
+        scale: isMobileDevice ? 1.5 : 2, // 모바일은 적당한 해상도로
         useCORS: true,
         allowTaint: true,
         scrollX: 0,
@@ -545,12 +546,23 @@ export default function AnalyzePage() {
         onclone: (clonedDoc) => {
           const clonedElement = clonedDoc.querySelector('[data-analysis-result]') as HTMLElement
           if (clonedElement) {
-            clonedElement.style.padding = '24px'
+            clonedElement.style.padding = '20px'
             clonedElement.style.margin = '0'
             clonedElement.style.maxWidth = 'none'
-            clonedElement.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
-            clonedElement.style.borderRadius = '16px'
-            clonedElement.style.border = '2px solid #e5e7eb'
+            clonedElement.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
+            clonedElement.style.borderRadius = '12px'
+            clonedElement.style.border = '1px solid #e5e7eb'
+            
+            // Next.js 이미지 최적화 문제 해결
+            const images = clonedElement.querySelectorAll('img')
+            images.forEach(img => {
+              // srcset 제거하고 기본 src만 사용
+              img.removeAttribute('srcset')
+              img.style.imageRendering = 'auto'
+              img.style.objectFit = 'contain'
+              img.style.maxWidth = '100%'
+              img.style.height = 'auto'
+            })
             
             // 불필요한 영역 제거
             const excludedContent = clonedElement.querySelector('.save-excluded-content')
@@ -561,37 +573,35 @@ export default function AnalyzePage() {
         }
       })
       
-      // 🎨 프리미엄 워터마크 추가
+      // 📱 심플한 워터마크 추가
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
-        gradient.addColorStop(0, '#6366f1')
-        gradient.addColorStop(1, '#8b5cf6')
-        
-        ctx.fillStyle = gradient
-        ctx.font = 'bold 28px Inter, sans-serif'
+        ctx.fillStyle = '#6366f1'
+        ctx.font = 'bold 20px sans-serif'
         ctx.textAlign = 'center'
-        const watermarkText = '✨ 테토-에겐 AI 분석 | teto-egen.com ✨'
+        const watermarkText = '테토-에겐 AI 분석 | teto-egen.com'
         const textX = canvas.width / 2
-        const textY = canvas.height - 40
+        const textY = canvas.height - 25
         
-        // 글로우 효과
-        ctx.shadowColor = 'rgba(99, 102, 241, 0.5)'
-        ctx.shadowBlur = 10
+        // 심플한 배경
+        const textMetrics = ctx.measureText(watermarkText)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+        ctx.fillRect(textX - textMetrics.width/2 - 10, textY - 15, textMetrics.width + 20, 25)
+        
+        ctx.fillStyle = '#6366f1'
         ctx.fillText(watermarkText, textX, textY)
-        ctx.shadowBlur = 0
       }
       
-      // 🔄 Canvas를 Blob으로 변환 (더 효율적)
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob!)
-        }, 'image/png', 0.98)
-      })
-      
-      const fileName = `테토에겐_${analysisResult.type}_${new Date().toISOString().split('T')[0]}.png`
-      
-             // 🍎 애플 생태계 최적화 저장 시스템
+              // 📱 최적화된 이미지 변환
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((blob) => {
+            resolve(blob!)
+          }, 'image/png', 0.9)
+        })
+        
+        const fileName = `테토에겐_${analysisResult.type}_${new Date().toISOString().split('T')[0]}.png`
+        
+        // 📱 스마트 저장 시스템
        if (isMobile()) {
          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
          const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
@@ -771,24 +781,24 @@ export default function AnalyzePage() {
          // URL 해제 (메모리 최적화)
          setTimeout(() => URL.revokeObjectURL(url), 3000)
         
-      } else {
-        // 💻 데스크톱: 최적화된 다운로드
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        link.style.display = 'none'
-        
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        
-        // URL 해제
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
-        
-        console.log('✅ 데스크톱 고품질 이미지 다운로드 완료:', fileName)
-        alert('💻 Ultra HD 분석결과가 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 🚀')
-      }
+              } else {
+          // 💻 데스크톱: 다운로드
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = fileName
+          link.style.display = 'none'
+          
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          
+          // URL 해제
+          setTimeout(() => URL.revokeObjectURL(url), 1000)
+          
+          console.log('✅ 데스크톱 이미지 다운로드 완료:', fileName)
+          alert('💻 분석결과가 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 📥')
+        }
       
     } catch (error) {
       console.error('❌ 저장 실패:', error)
@@ -1004,52 +1014,39 @@ export default function AnalyzePage() {
         <div className={`mb-8 min-h-[800px] ${!analysisResult ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
           {analysisResult && (
             <>
-                             {/* 🚀 TESLA급 갤러리 저장 시스템 */}
-               <Card className="mb-4 bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 border-0 shadow-2xl overflow-hidden relative">
-                 <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
-                 <CardContent className="p-6 relative z-10">
+                                            {/* 📱 갤러리 저장 */}
+               <Card className="mb-4 bg-gradient-to-r from-green-500 to-emerald-600 border-0 shadow-lg">
+                 <CardContent className="p-4">
                    <div className="text-center">
-                     <div className="mb-4">
-                       <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-3 backdrop-blur-sm">
-                         <Download className="h-8 w-8 text-white" />
+                     <div className="mb-3">
+                       <div className="w-12 h-12 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-2">
+                         <Download className="h-6 w-6 text-white" />
                        </div>
-                       <h3 className="font-black text-white mb-2 text-xl tracking-tight">
-                         🚀 Ultra HD 갤러리 저장
+                       <h3 className="font-bold text-white mb-1 text-lg">
+                         📱 갤러리에 저장
                        </h3>
-                                               <p className="text-green-100 text-sm font-medium">
-                          🍎 iPhone 최적화 · 📱 Android 호환 · 💻 Desktop 지원
-                        </p>
+                       <p className="text-green-100 text-sm">
+                         모든 기기에서 사용 가능
+                       </p>
                      </div>
                      
                      <Button
                        onClick={handleSaveResult}
                        disabled={isSavingImage}
-                       className="w-full bg-white text-green-700 hover:text-green-800 px-8 py-5 text-lg font-black shadow-xl transform hover:scale-105 transition-all duration-300 border-0 hover:bg-green-50 mb-4"
+                       className="w-full bg-white text-green-700 hover:text-green-800 px-6 py-3 text-base font-bold shadow-lg hover:scale-105 transition-all duration-200 border-0 hover:bg-green-50"
                      >
                        {isSavingImage ? (
                          <>
-                           <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                           🔥 TESLA급 이미지 생성 중...
+                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                           이미지 생성 중...
                          </>
                        ) : (
                          <>
-                           <Download className="mr-3 h-6 w-6" />
-                           🎯 원클릭 스마트 저장
+                           <Download className="mr-2 h-5 w-5" />
+                           원클릭 저장
                          </>
                        )}
                      </Button>
-
-                     <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl text-xs text-green-50 border border-white/30">
-                       <div className="flex items-center justify-center gap-2 mb-2">
-                         <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
-                         <p className="font-bold">AI 스마트 저장 시스템</p>
-                         <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
-                       </div>
-                       <p className="leading-relaxed">
-                         🍎 iPhone: 네이티브 공유 → 클립보드 → Safari 다운로드<br/>
-                         📱 Android: 직접 갤러리 저장 · 💻 Desktop: Ultra HD 다운로드
-                       </p>
-                     </div>
                    </div>
                  </CardContent>
                </Card>
