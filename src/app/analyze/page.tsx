@@ -11,6 +11,7 @@ import AdBanner from "@/components/AdBanner"
 
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/auth/AuthModal'
+import CoupangProductSelector from '@/components/CoupangProductSelector'
 
 export default function AnalyzePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -21,6 +22,7 @@ export default function AnalyzePage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showCoupangProducts, setShowCoupangProducts] = useState(false)
   const { user } = useAuth()
 
   // 사용자별 localStorage 키 생성 (보안 강화)
@@ -401,15 +403,10 @@ export default function AnalyzePage() {
     }
   }
 
-  // 호르몬 강화하기 페이지로 이동
+  // 호르몬 강화하기 - 쿠팡 파트너스 상품 모달 열기
   const handleHormoneBoost = () => {
-    if (!analysisResult || !developmentTips) return
-    
-    // 분석 결과에 따른 맞춤 추천 페이지로 이동
-    const searchQuery = developmentTips.shoppingKeywords.join(' ')
-    const searchUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(searchQuery)}`
-    
-    window.open(searchUrl, '_blank')
+    if (!analysisResult) return
+    setShowCoupangProducts(true)
   }
 
   const getTypeColor = (type: string) => {
@@ -798,6 +795,15 @@ export default function AnalyzePage() {
         }}
         initialTab="login"
       />
+
+      {/* 쿠팡 파트너스 상품 선택 모달 */}
+      {analysisResult && (
+        <CoupangProductSelector
+          isOpen={showCoupangProducts}
+          onClose={() => setShowCoupangProducts(false)}
+          userType={analysisResult.type}
+        />
+      )}
     </div>
   )
 } 
