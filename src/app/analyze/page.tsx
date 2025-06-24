@@ -523,18 +523,19 @@ export default function AnalyzePage() {
   }
 
   // 분석결과를 이미지로 저장하기 - 모바일/데스크톱 별 다른 방식
+  // 🚀 혁신적인 멀티 플랫폼 저장 시스템
   const handleSaveResult = async () => {
     if (!analysisResult || !analysisResultRef.current) return
     
     setIsSavingImage(true)
     
     try {
-      console.log('📸 분석결과 이미지 생성 시작...')
+      console.log('🚀 TESLA급 이미지 생성 시작...')
       
-      // html2canvas로 분석결과 영역을 이미지로 캡처
+      // 🎯 초고해상도 이미지 생성
       const canvas = await html2canvas(analysisResultRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // 고해상도
+        scale: 3, // 더 고해상도로 업그레이드
         useCORS: true,
         allowTaint: true,
         scrollX: 0,
@@ -542,16 +543,16 @@ export default function AnalyzePage() {
         width: analysisResultRef.current.scrollWidth,
         height: analysisResultRef.current.scrollHeight,
         onclone: (clonedDoc) => {
-          // 클론된 문서에서 스타일 조정
           const clonedElement = clonedDoc.querySelector('[data-analysis-result]') as HTMLElement
           if (clonedElement) {
-            clonedElement.style.padding = '20px'
+            clonedElement.style.padding = '24px'
             clonedElement.style.margin = '0'
             clonedElement.style.maxWidth = 'none'
-            clonedElement.style.boxShadow = 'none'
-            clonedElement.style.borderRadius = '12px'
+            clonedElement.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+            clonedElement.style.borderRadius = '16px'
+            clonedElement.style.border = '2px solid #e5e7eb'
             
-            // 추천상품 및 버튼 영역 제거 (저장 시 제외)
+            // 불필요한 영역 제거
             const excludedContent = clonedElement.querySelector('.save-excluded-content')
             if (excludedContent) {
               excludedContent.remove()
@@ -560,120 +561,238 @@ export default function AnalyzePage() {
         }
       })
       
-      // Canvas에 워터마크 추가
+      // 🎨 프리미엄 워터마크 추가
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        // 하단에 브랜딩 텍스트 추가
-        ctx.fillStyle = '#6366f1'
-        ctx.font = 'bold 24px sans-serif'
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0)
+        gradient.addColorStop(0, '#6366f1')
+        gradient.addColorStop(1, '#8b5cf6')
+        
+        ctx.fillStyle = gradient
+        ctx.font = 'bold 28px Inter, sans-serif'
         ctx.textAlign = 'center'
-        const watermarkText = '테토-에겐 AI 분석 | teto-egen.com'
+        const watermarkText = '✨ 테토-에겐 AI 분석 | teto-egen.com ✨'
         const textX = canvas.width / 2
-        const textY = canvas.height - 30
+        const textY = canvas.height - 40
         
-        // 배경 사각형
-        const textMetrics = ctx.measureText(watermarkText)
-        const textWidth = textMetrics.width
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
-        ctx.fillRect(textX - textWidth/2 - 10, textY - 20, textWidth + 20, 30)
-        
-        // 텍스트
-        ctx.fillStyle = '#6366f1'
+        // 글로우 효과
+        ctx.shadowColor = 'rgba(99, 102, 241, 0.5)'
+        ctx.shadowBlur = 10
         ctx.fillText(watermarkText, textX, textY)
+        ctx.shadowBlur = 0
       }
       
-      // Canvas를 Data URL로 변환
-      const dataURL = canvas.toDataURL('image/png', 0.95)
+      // 🔄 Canvas를 Blob으로 변환 (더 효율적)
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob!)
+        }, 'image/png', 0.98)
+      })
       
-      // 모바일과 데스크톱 구분하여 처리
-      if (isMobile()) {
-        // 📱 모바일: 새 창에서 이미지 열기 (길게 눌러서 저장 가능)
-        const newWindow = window.open()
-        if (newWindow) {
-          newWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>테토-에겐 분석결과</title>
-              <style>
-                body {
-                  margin: 0;
-                  padding: 20px;
-                  background: #f5f5f5;
-                  font-family: sans-serif;
-                  text-align: center;
-                }
-                .container {
-                  max-width: 100%;
-                  margin: 0 auto;
-                }
-                img {
-                  max-width: 100%;
-                  height: auto;
-                  border-radius: 12px;
-                  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                  margin-bottom: 20px;
-                }
-                .instruction {
-                  background: #e0f2fe;
-                  padding: 15px;
-                  border-radius: 8px;
-                  margin: 20px 0;
-                  color: #0277bd;
-                }
-                .instruction h3 {
-                  margin: 0 0 10px 0;
-                  font-size: 16px;
-                }
-                .instruction p {
-                  margin: 5px 0;
-                  font-size: 14px;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <img src="${dataURL}" alt="테토-에겐 분석결과" />
-                <div class="instruction">
-                  <h3>📱 갤러리에 저장하는 방법</h3>
-                  <p><strong>1.</strong> 위 이미지를 길게 눌러주세요</p>
-                  <p><strong>2.</strong> "이미지 저장" 또는 "사진에 저장" 선택</p>
-                  <p><strong>3.</strong> 갤러리에서 확인하세요! 🎉</p>
-                </div>
-              </div>
-            </body>
-            </html>
-          `)
-          newWindow.document.close()
-        }
-        
-        console.log('✅ 모바일 이미지 저장 페이지 열림')
-        alert('📱 새 창에서 이미지가 열렸습니다!\n\n이미지를 길게 눌러서 갤러리에 저장해주세요! 🎉')
+      const fileName = `테토에겐_${analysisResult.type}_${new Date().toISOString().split('T')[0]}.png`
+      
+             // 🍎 애플 생태계 최적화 저장 시스템
+       if (isMobile()) {
+         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+         const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
+         
+         console.log(`🍎 디바이스 감지: iOS=${isIOS}, Safari=${isSafari}`)
+         
+         // 🍎 방법 1: iOS Web Share API (iOS 12.2+)
+         if (isIOS && navigator.share) {
+           try {
+             const file = new File([blob], fileName, { type: 'image/png' })
+             
+             // iOS에서 파일 공유 지원 여부 확인
+             if (navigator.canShare && navigator.canShare({ files: [file] })) {
+               await navigator.share({
+                 title: '🍎 테토-에겐 AI 분석 결과',
+                 text: `나는 ${analysisResult.type}! 테토-에겐 성격 분석 결과를 확인해보세요!`,
+                 files: [file]
+               })
+               console.log('✅ iOS Web Share API로 저장 완료')
+               alert('🍎 iOS 네이티브 공유가 완료되었습니다!\n\n"사진에 저장"을 선택하면 포토 앱에 저장됩니다! 📱')
+               return
+             } else {
+               // 파일 없이 URL 공유 (iOS 구버전 호환)
+               await navigator.share({
+                 title: '🍎 테토-에겐 AI 분석 결과',
+                 text: `나는 ${analysisResult.type}! 테토-에겐 성격 분석 결과를 확인해보세요!`,
+                 url: window.location.href
+               })
+               console.log('✅ iOS Web Share API (URL) 완료')
+             }
+           } catch (shareError) {
+             console.log('🍎 Web Share API 실패, 클립보드 방법 시도:', shareError)
+           }
+         }
+         
+         // 🍎 방법 2: iOS 클립보드 API (iOS 13.4+)
+         if (isIOS && navigator.clipboard && navigator.clipboard.write) {
+           try {
+             await navigator.clipboard.write([
+               new ClipboardItem({
+                 'image/png': blob
+               })
+             ])
+             console.log('✅ iOS 클립보드에 이미지 복사 완료')
+             alert('🍎 이미지가 클립보드에 복사되었습니다!\n\n포토 앱을 열고 "+" 버튼 → "붙여넣기"로 저장하세요! 📸')
+             return
+           } catch (clipboardError) {
+             console.log('🍎 클립보드 API 실패, 다운로드 방법 시도:', clipboardError)
+           }
+         }
+         
+         // 🍎 방법 3: iOS Safari 호환 다운로드 (모든 iOS 버전)
+         const url = URL.createObjectURL(blob)
+         
+         if (isIOS) {
+           // iOS Safari에서 이미지 새 창 열기
+           const newWindow = window.open('', '_blank')
+           if (newWindow) {
+             newWindow.document.write(`
+               <!DOCTYPE html>
+               <html>
+               <head>
+                 <meta charset="UTF-8">
+                 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+                 <title>🍎 테토-에겐 분석결과</title>
+                 <style>
+                   body {
+                     margin: 0;
+                     padding: 15px;
+                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                     text-align: center;
+                     min-height: 100vh;
+                   }
+                   .container {
+                     max-width: 100%;
+                     margin: 0 auto;
+                   }
+                   img {
+                     max-width: 100%;
+                     height: auto;
+                     border-radius: 16px;
+                     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                     margin-bottom: 20px;
+                     border: 2px solid rgba(255,255,255,0.2);
+                   }
+                   .instruction {
+                     background: rgba(255,255,255,0.95);
+                     backdrop-filter: blur(10px);
+                     padding: 20px;
+                     border-radius: 16px;
+                     margin: 20px 0;
+                     color: #1d1d1f;
+                     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                   }
+                   .instruction h3 {
+                     margin: 0 0 15px 0;
+                     font-size: 18px;
+                     font-weight: 700;
+                     color: #007AFF;
+                   }
+                   .instruction p {
+                     margin: 8px 0;
+                     font-size: 16px;
+                     line-height: 1.5;
+                   }
+                   .step {
+                     background: #007AFF;
+                     color: white;
+                     border-radius: 12px;
+                     padding: 15px;
+                     margin: 10px 0;
+                     font-weight: 600;
+                   }
+                   .apple-logo {
+                     font-size: 24px;
+                     margin-bottom: 10px;
+                   }
+                 </style>
+               </head>
+               <body>
+                 <div class="container">
+                   <div class="apple-logo">🍎</div>
+                   <img src="${url}" alt="테토-에겐 분석결과" id="resultImage" />
+                   <div class="instruction">
+                     <h3>📱 iPhone 포토 앱에 저장하기</h3>
+                     <div class="step">
+                       <strong>1단계:</strong> 위 이미지를 길게 눌러주세요 (Long Press)
+                     </div>
+                     <div class="step">
+                       <strong>2단계:</strong> 팝업 메뉴에서 "이미지 저장" 또는 "사진에 저장" 선택
+                     </div>
+                     <div class="step">
+                       <strong>3단계:</strong> 포토 앱에서 저장된 이미지 확인! 🎉
+                     </div>
+                     <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                       💡 저장이 안 되시나요? 설정 → Safari → 다운로드에서 위치를 확인해보세요.
+                     </p>
+                   </div>
+                 </div>
+                 <script>
+                   // 이미지 로드 완료 후 알림
+                   document.getElementById('resultImage').onload = function() {
+                     setTimeout(() => {
+                       alert('🍎 iPhone 사용자님!\\n\\n이미지를 길게 눌러서 "사진에 저장"을 선택해주세요! 📸');
+                     }, 1000);
+                   };
+                 </script>
+               </body>
+               </html>
+             `)
+             newWindow.document.close()
+             console.log('✅ iOS Safari 호환 저장 페이지 열림')
+           } else {
+             // 팝업 차단된 경우 직접 다운로드 시도
+             const link = document.createElement('a')
+             link.href = url
+             link.download = fileName
+             link.style.display = 'none'
+             document.body.appendChild(link)
+             link.click()
+             document.body.removeChild(link)
+             alert('🍎 다운로드가 시작되었습니다!\n\nSafari 하단의 다운로드 버튼을 확인해주세요! 📥')
+           }
+         } else {
+           // 안드로이드 및 기타 모바일
+           const link = document.createElement('a')
+           link.href = url
+           link.download = fileName
+           link.style.display = 'none'
+           document.body.appendChild(link)
+           link.click()
+           document.body.removeChild(link)
+           alert('📱 이미지 다운로드 완료!\n\n갤러리 또는 다운로드 폴더에서 확인하세요! 🎉')
+         }
+         
+         // URL 해제 (메모리 최적화)
+         setTimeout(() => URL.revokeObjectURL(url), 3000)
         
       } else {
-        // 💻 데스크톱: 자동 다운로드
+        // 💻 데스크톱: 최적화된 다운로드
+        const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
-        link.href = dataURL
-        
-        // 파일명 생성 (분석 타입과 날짜 포함)
-        const today = new Date().toISOString().split('T')[0]
-        const fileName = `테토에겐_${analysisResult.type}_${today}.png`
+        link.href = url
         link.download = fileName
+        link.style.display = 'none'
         
-        // 자동 다운로드 실행
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
         
-        console.log('✅ 데스크톱 이미지 다운로드 완료:', fileName)
-        alert('💻 분석결과가 이미지로 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 🎉')
+        // URL 해제
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+        
+        console.log('✅ 데스크톱 고품질 이미지 다운로드 완료:', fileName)
+        alert('💻 Ultra HD 분석결과가 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 🚀')
       }
       
     } catch (error) {
-      console.error('이미지 저장 실패:', error)
-      alert('이미지 저장 중 오류가 발생했습니다. 다시 시도해주세요.')
+      console.error('❌ 저장 실패:', error)
+      alert('💥 저장 중 오류가 발생했습니다.\n다시 시도하거나 스크린샷을 이용해주세요.')
     } finally {
       setIsSavingImage(false)
     }
@@ -885,23 +1004,50 @@ export default function AnalyzePage() {
         <div className={`mb-8 min-h-[800px] ${!analysisResult ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
           {analysisResult && (
             <>
-                             {/* 갤러리 저장 안내 - 제일 위로 이동 */}
-               <Card className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
-                 <CardContent className="p-4">
+                             {/* 🚀 TESLA급 갤러리 저장 시스템 */}
+               <Card className="mb-4 bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 border-0 shadow-2xl overflow-hidden relative">
+                 <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+                 <CardContent className="p-6 relative z-10">
                    <div className="text-center">
-                     <h3 className="font-bold text-green-800 mb-2 text-base flex items-center justify-center">
-                       <Download className="mr-2 h-5 w-5" />
-                       📱 갤러리 저장 방법
-                     </h3>
-                     <div className="bg-white/70 p-3 rounded-lg">
-                       <p className="text-sm text-green-700 mb-2">
-                         <strong>1.</strong> 아래 "갤러리에 이미지 저장" 버튼 클릭
-                       </p>
-                       <p className="text-sm text-green-700 mb-2">
-                         <strong>2.</strong> 새 창에서 이미지를 길게 눌러주세요
-                       </p>
-                       <p className="text-sm text-green-700">
-                         <strong>3.</strong> "이미지 저장" 또는 "사진에 저장" 선택 🎉
+                     <div className="mb-4">
+                       <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-3 backdrop-blur-sm">
+                         <Download className="h-8 w-8 text-white" />
+                       </div>
+                       <h3 className="font-black text-white mb-2 text-xl tracking-tight">
+                         🚀 Ultra HD 갤러리 저장
+                       </h3>
+                                               <p className="text-green-100 text-sm font-medium">
+                          🍎 iPhone 최적화 · 📱 Android 호환 · 💻 Desktop 지원
+                        </p>
+                     </div>
+                     
+                     <Button
+                       onClick={handleSaveResult}
+                       disabled={isSavingImage}
+                       className="w-full bg-white text-green-700 hover:text-green-800 px-8 py-5 text-lg font-black shadow-xl transform hover:scale-105 transition-all duration-300 border-0 hover:bg-green-50 mb-4"
+                     >
+                       {isSavingImage ? (
+                         <>
+                           <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+                           🔥 TESLA급 이미지 생성 중...
+                         </>
+                       ) : (
+                         <>
+                           <Download className="mr-3 h-6 w-6" />
+                           🎯 원클릭 스마트 저장
+                         </>
+                       )}
+                     </Button>
+
+                     <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl text-xs text-green-50 border border-white/30">
+                       <div className="flex items-center justify-center gap-2 mb-2">
+                         <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
+                         <p className="font-bold">AI 스마트 저장 시스템</p>
+                         <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
+                       </div>
+                       <p className="leading-relaxed">
+                         🍎 iPhone: 네이티브 공유 → 클립보드 → Safari 다운로드<br/>
+                         📱 Android: 직접 갤러리 저장 · 💻 Desktop: Ultra HD 다운로드
                        </p>
                      </div>
                    </div>
@@ -1052,43 +1198,43 @@ export default function AnalyzePage() {
                     </div>
                   </div>
 
-                  {/* 호르몬 강화하기 - 저장 시에는 제외될 영역 */}
-                  <div className="save-excluded-content">
-                    {developmentTips && (
-                      <div className="mb-6">
-                        <h3 className="font-medium text-gray-800 mb-3 text-sm text-center flex items-center justify-center">
-                          <TrendingUp className="mr-2 h-4 w-4" />
-                          {developmentTips.title}
-                        </h3>
-                        
-                        {/* 일상 팁 */}
-                        <div className="bg-yellow-50 p-3 rounded-lg mb-4">
-                          <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
-                          <ul className="space-y-1">
-                            {developmentTips.tips.map((tip: string, index: number) => (
-                              <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
-                            ))}
-                          </ul>
-                        </div>
+                                     {/* 호르몬 강화하기 - 저장 시에는 제외될 영역 */}
+                   <div className="save-excluded-content">
+                     {developmentTips && (
+                       <div className="mb-6">
+                         <h3 className="font-medium text-gray-800 mb-3 text-sm text-center flex items-center justify-center">
+                           <TrendingUp className="mr-2 h-4 w-4" />
+                           {developmentTips.title}
+                         </h3>
+                         
+                         {/* 일상 팁 */}
+                         <div className="bg-yellow-50 p-3 rounded-lg mb-4">
+                           <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
+                           <ul className="space-y-1">
+                             {developmentTips.tips.map((tip: string, index: number) => (
+                               <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
+                             ))}
+                           </ul>
+                         </div>
 
-                        {/* 추천 상품 키워드 */}
-                        <div className="bg-indigo-50 p-3 rounded-lg">
-                          <h4 className="font-medium text-indigo-800 mb-2 text-sm">🛒 추천 상품 키워드</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {developmentTips.shoppingKeywords.map((keyword: string, index: number) => (
-                              <span 
-                                key={index} 
-                                className="bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
-                              >
-                                {keyword}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                         {/* 추천 상품 키워드 */}
+                         <div className="bg-indigo-50 p-3 rounded-lg">
+                           <h4 className="font-medium text-indigo-800 mb-2 text-sm">🛒 추천 상품 키워드</h4>
+                           <div className="flex flex-wrap gap-1">
+                             {developmentTips.shoppingKeywords.map((keyword: string, index: number) => (
+                               <span 
+                                 key={index} 
+                                 className="bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
+                               >
+                                 {keyword}
+                               </span>
+                             ))}
+                           </div>
+                         </div>
+                       </div>
+                     )}
 
-                                         {/* 친구에게 추천하기 및 기타 버튼들 */}
+                     {/* 친구에게 추천하기 및 기타 버튼들 */}
                      <div className="text-center space-y-3">
                        <Button
                          onClick={handleRecommendToFriend}
@@ -1108,27 +1254,6 @@ export default function AnalyzePage() {
                        </Button>
                      </div>
                    </div>
-
-                   {/* 갤러리 저장 버튼 - 추천상품과 분리된 영역 */}
-                   <div className="text-center mt-6 pt-4 border-t border-gray-200">
-                     <Button
-                       onClick={handleSaveResult}
-                       disabled={isSavingImage}
-                       className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm font-bold shadow-lg"
-                     >
-                       {isSavingImage ? (
-                         <>
-                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                           이미지 생성 중...
-                         </>
-                       ) : (
-                         <>
-                           <Download className="mr-2 h-4 w-4" />
-                           📱 갤러리에 이미지 저장
-                         </>
-                       )}
-                     </Button>
-                  </div>
                 </CardContent>
               </Card>
             </>
