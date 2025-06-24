@@ -550,6 +550,12 @@ export default function AnalyzePage() {
             clonedElement.style.maxWidth = 'none'
             clonedElement.style.boxShadow = 'none'
             clonedElement.style.borderRadius = '12px'
+            
+            // 추천상품 및 버튼 영역 제거 (저장 시 제외)
+            const excludedContent = clonedElement.querySelector('.save-excluded-content')
+            if (excludedContent) {
+              excludedContent.remove()
+            }
           }
         }
       })
@@ -878,214 +884,254 @@ export default function AnalyzePage() {
         {/* 분석 결과 섹션 - 항상 표시되지만 내용은 조건부 */}
         <div className={`mb-8 min-h-[800px] ${!analysisResult ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-500`}>
           {analysisResult && (
-            <Card 
-              ref={analysisResultRef}
-              data-analysis-result
-              className={`border-2 ${getTypeColor(analysisResult.type)}`}
-            >
-              <CardHeader>
-                <CardTitle className="text-center text-lg">
-                  {analysisResult.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* 핵심 정체성 */}
-                <div className="text-center mb-6">
-                  <div className="flex flex-col items-center mb-4">
-                    <Image
-                      src={
-                        analysisResult.type === '테토남' ? '/tetoman.png'
-                        : analysisResult.type === '테토녀' ? '/tetowoman.png'
-                        : analysisResult.type === '에겐남' ? '/egenman.png'
-                        : '/egenwoman.png'
-                      }
-                      alt={analysisResult.type}
-                      width={80}
-                      height={80}
-                      className="mb-2"
-                    />
-                    <h2 className="text-lg font-bold mb-2">
-                      👑{analysisResult.type}
-                    </h2>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {analysisResult.summary}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      신뢰도: {analysisResult.confidence}%
-                    </p>
-                  </div>
-                </div>
+            <>
+                             {/* 갤러리 저장 안내 - 제일 위로 이동 */}
+               <Card className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+                 <CardContent className="p-4">
+                   <div className="text-center">
+                     <h3 className="font-bold text-green-800 mb-2 text-base flex items-center justify-center">
+                       <Download className="mr-2 h-5 w-5" />
+                       📱 갤러리 저장 방법
+                     </h3>
+                     <div className="bg-white/70 p-3 rounded-lg">
+                       <p className="text-sm text-green-700 mb-2">
+                         <strong>1.</strong> 아래 "갤러리에 이미지 저장" 버튼 클릭
+                       </p>
+                       <p className="text-sm text-green-700 mb-2">
+                         <strong>2.</strong> 새 창에서 이미지를 길게 눌러주세요
+                       </p>
+                       <p className="text-sm text-green-700">
+                         <strong>3.</strong> "이미지 저장" 또는 "사진에 저장" 선택 🎉
+                       </p>
+                     </div>
+                   </div>
+                 </CardContent>
+               </Card>
 
-                {/* 성향 순위 */}
-                <div className="space-y-3 mb-6">
-                  <h3 className="font-medium text-center text-gray-800 text-sm">성향 분석</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {Object.entries(analysisResult.traits)
-                      .filter(([key]) => !['teto', 'egen'].includes(key))
-                      .map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between bg-white p-2 rounded">
-                          <span className="text-xs font-medium">
-                            {key === 'emotion' ? '감정적' :
-                             key === 'logic' ? '논리적' :
-                             key === 'extraversion' ? '외향적' :
-                             key === 'stability' ? '안정적' :
-                             key === 'initiative' ? '주도적' : key}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
-                                style={{ width: `${value}%` }}
-                              ></div>
+              <Card 
+                ref={analysisResultRef}
+                data-analysis-result
+                className={`border-2 ${getTypeColor(analysisResult.type)}`}
+              >
+                <CardHeader>
+                  <CardTitle className="text-center text-lg">
+                    {analysisResult.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* 핵심 정체성 */}
+                  <div className="text-center mb-6">
+                    <div className="flex flex-col items-center mb-4">
+                      <div className="w-20 h-20 flex items-center justify-center mb-2">
+                        <Image
+                          src={
+                            analysisResult.type === '테토남' ? '/tetoman.png'
+                            : analysisResult.type === '테토녀' ? '/tetowoman.png'
+                            : analysisResult.type === '에겐남' ? '/egenman.png'
+                            : '/egenwoman.png'
+                          }
+                          alt={analysisResult.type}
+                          width={80}
+                          height={80}
+                          className="object-contain max-w-full max-h-full"
+                          style={{ imageRendering: 'auto' }}
+                          priority
+                        />
+                      </div>
+                      <h2 className="text-lg font-bold mb-2">
+                        👑{analysisResult.type}
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {analysisResult.summary}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        신뢰도: {analysisResult.confidence}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 성향 순위 */}
+                  <div className="space-y-3 mb-6">
+                    <h3 className="font-medium text-center text-gray-800 text-sm">성향 분석</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      {Object.entries(analysisResult.traits)
+                        .filter(([key]) => !['teto', 'egen'].includes(key))
+                        .map(([key, value]) => (
+                          <div key={key} className="flex items-center justify-between bg-white p-2 rounded">
+                            <span className="text-xs font-medium">
+                              {key === 'emotion' ? '감정적' :
+                               key === 'logic' ? '논리적' :
+                               key === 'extraversion' ? '외향적' :
+                               key === 'stability' ? '안정적' :
+                               key === 'initiative' ? '주도적' : key}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                  style={{ width: `${value}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs font-bold w-8 text-right">{value}%</span>
                             </div>
-                            <span className="text-xs font-bold w-8 text-right">{value}%</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* AI 분석 근거 */}
+                  <div className="bg-gray-50 p-3 rounded-lg mb-6">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm">🤖 AI 분석 포인트</h3>
+                    <div className="space-y-2">
+                      {analysisResult.scenarios.map((scenario, index) => (
+                        <p key={index} className="text-xs text-gray-600 leading-relaxed">
+                          • {scenario}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 오늘의 미션 */}
+                  <div className="bg-blue-50 p-3 rounded-lg mb-6">
+                    <h3 className="font-medium text-blue-800 mb-2 text-sm flex items-center">
+                      ✨ 오늘의 미션
+                    </h3>
+                    <p className="text-blue-700 text-xs">{analysisResult.dailyMission}</p>
+                  </div>
+
+                  {/* 연애 케미스트리 */}
+                  <div className="mb-6">
+                    <h3 className="font-medium text-gray-800 mb-3 text-sm text-center">💕 연애 케미스트리</h3>
+                    <div className="space-y-3">
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            <Image
+                              src={
+                                analysisResult.chemistry.best.type === '테토남' ? '/tetoman.png'
+                                : analysisResult.chemistry.best.type === '테토녀' ? '/tetowoman.png'
+                                : analysisResult.chemistry.best.type === '에겐남' ? '/egenman.png'
+                                : '/egenwoman.png'
+                              }
+                              alt={analysisResult.chemistry.best.type}
+                              width={24}
+                              height={24}
+                              className="object-contain rounded-full"
+                              style={{ imageRendering: 'auto' }}
+                            />
+                          </div>
+                          <h4 className="font-medium text-green-800 text-sm">
+                            환상의 케미: {analysisResult.chemistry.best.type}
+                          </h4>
+                        </div>
+                        <p className="text-green-700 text-xs">{analysisResult.chemistry.best.reason}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            <Image
+                              src={
+                                analysisResult.chemistry.worst.type === '테토남' ? '/tetoman.png'
+                                : analysisResult.chemistry.worst.type === '테토녀' ? '/tetowoman.png'
+                                : analysisResult.chemistry.worst.type === '에겐남' ? '/egenman.png'
+                                : '/egenwoman.png'
+                              }
+                              alt={analysisResult.chemistry.worst.type}
+                              width={24}
+                              height={24}
+                              className="object-contain rounded-full"
+                              style={{ imageRendering: 'auto' }}
+                            />
+                          </div>
+                          <h4 className="font-medium text-red-800 text-sm">
+                            환장의 케미: {analysisResult.chemistry.worst.type}
+                          </h4>
+                        </div>
+                        <p className="text-red-700 text-xs">{analysisResult.chemistry.worst.reason}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 호르몬 강화하기 - 저장 시에는 제외될 영역 */}
+                  <div className="save-excluded-content">
+                    {developmentTips && (
+                      <div className="mb-6">
+                        <h3 className="font-medium text-gray-800 mb-3 text-sm text-center flex items-center justify-center">
+                          <TrendingUp className="mr-2 h-4 w-4" />
+                          {developmentTips.title}
+                        </h3>
+                        
+                        {/* 일상 팁 */}
+                        <div className="bg-yellow-50 p-3 rounded-lg mb-4">
+                          <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
+                          <ul className="space-y-1">
+                            {developmentTips.tips.map((tip: string, index: number) => (
+                              <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* 추천 상품 키워드 */}
+                        <div className="bg-indigo-50 p-3 rounded-lg">
+                          <h4 className="font-medium text-indigo-800 mb-2 text-sm">🛒 추천 상품 키워드</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {developmentTips.shoppingKeywords.map((keyword: string, index: number) => (
+                              <span 
+                                key={index} 
+                                className="bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
+                              >
+                                {keyword}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* AI 분석 근거 */}
-                <div className="bg-gray-50 p-3 rounded-lg mb-6">
-                  <h3 className="font-medium text-gray-800 mb-2 text-sm">🤖 AI 분석 포인트</h3>
-                  <div className="space-y-2">
-                    {analysisResult.scenarios.map((scenario, index) => (
-                      <p key={index} className="text-xs text-gray-600 leading-relaxed">
-                        • {scenario}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 오늘의 미션 */}
-                <div className="bg-blue-50 p-3 rounded-lg mb-6">
-                  <h3 className="font-medium text-blue-800 mb-2 text-sm flex items-center">
-                    ✨ 오늘의 미션
-                  </h3>
-                  <p className="text-blue-700 text-xs">{analysisResult.dailyMission}</p>
-                </div>
-
-                {/* 연애 케미스트리 */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-800 mb-3 text-sm text-center">💕 연애 케미스트리</h3>
-                  <div className="space-y-3">
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Image
-                          src={
-                            analysisResult.chemistry.best.type === '테토남' ? '/tetoman.png'
-                            : analysisResult.chemistry.best.type === '테토녀' ? '/tetowoman.png'
-                            : analysisResult.chemistry.best.type === '에겐남' ? '/egenman.png'
-                            : '/egenwoman.png'
-                          }
-                          alt={analysisResult.chemistry.best.type}
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                        <h4 className="font-medium text-green-800 text-sm">
-                          환상의 케미: {analysisResult.chemistry.best.type}
-                        </h4>
                       </div>
-                      <p className="text-green-700 text-xs">{analysisResult.chemistry.best.reason}</p>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Image
-                          src={
-                            analysisResult.chemistry.worst.type === '테토남' ? '/tetoman.png'
-                            : analysisResult.chemistry.worst.type === '테토녀' ? '/tetowoman.png'
-                            : analysisResult.chemistry.worst.type === '에겐남' ? '/egenman.png'
-                            : '/egenwoman.png'
-                          }
-                          alt={analysisResult.chemistry.worst.type}
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                        <h4 className="font-medium text-red-800 text-sm">
-                          환장의 케미: {analysisResult.chemistry.worst.type}
-                        </h4>
-                      </div>
-                      <p className="text-red-700 text-xs">{analysisResult.chemistry.worst.reason}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 호르몬 강화하기 */}
-                {developmentTips && (
-                  <div className="mb-6">
-                    <h3 className="font-medium text-gray-800 mb-3 text-sm text-center flex items-center justify-center">
-                      <TrendingUp className="mr-2 h-4 w-4" />
-                      {developmentTips.title}
-                    </h3>
-                    
-                    {/* 일상 팁 */}
-                    <div className="bg-yellow-50 p-3 rounded-lg mb-4">
-                      <h4 className="font-medium text-yellow-800 mb-2 text-sm">💡 일상 실천 팁</h4>
-                      <ul className="space-y-1">
-                        {developmentTips.tips.map((tip: string, index: number) => (
-                          <li key={index} className="text-yellow-700 text-xs">• {tip}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* 추천 상품 키워드 */}
-                    <div className="bg-indigo-50 p-3 rounded-lg">
-                      <h4 className="font-medium text-indigo-800 mb-2 text-sm">🛒 추천 상품 키워드</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {developmentTips.shoppingKeywords.map((keyword: string, index: number) => (
-                          <span 
-                            key={index} 
-                            className="bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 친구에게 추천하기 및 기타 버튼들 */}
-                <div className="text-center space-y-3">
-                  <Button
-                    onClick={handleRecommendToFriend}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 text-sm"
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    친구에게 추천하기
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSaveResult}
-                    disabled={isSavingImage}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
-                  >
-                    {isSavingImage ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        이미지 생성 중...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-2 h-4 w-4" />
-                        갤러리에 이미지 저장
-                      </>
                     )}
-                  </Button>
-                  
-                  {/* 호르몬 강화하기 버튼 */}
-                  <Button
-                    onClick={handleHormoneBoost}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-sm"
-                  >
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    호르몬 강화하기 🛒
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
+                                         {/* 친구에게 추천하기 및 기타 버튼들 */}
+                     <div className="text-center space-y-3">
+                       <Button
+                         onClick={handleRecommendToFriend}
+                         className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 text-sm"
+                       >
+                         <Share2 className="mr-2 h-4 w-4" />
+                         친구에게 추천하기
+                       </Button>
+                       
+                       {/* 호르몬 강화하기 버튼 */}
+                       <Button
+                         onClick={handleHormoneBoost}
+                         className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-sm"
+                       >
+                         <TrendingUp className="mr-2 h-4 w-4" />
+                         호르몬 강화하기 🛒
+                       </Button>
+                     </div>
+                   </div>
+
+                   {/* 갤러리 저장 버튼 - 추천상품과 분리된 영역 */}
+                   <div className="text-center mt-6 pt-4 border-t border-gray-200">
+                     <Button
+                       onClick={handleSaveResult}
+                       disabled={isSavingImage}
+                       className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm font-bold shadow-lg"
+                     >
+                       {isSavingImage ? (
+                         <>
+                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                           이미지 생성 중...
+                         </>
+                       ) : (
+                         <>
+                           <Download className="mr-2 h-4 w-4" />
+                           📱 갤러리에 이미지 저장
+                         </>
+                       )}
+                     </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
 
