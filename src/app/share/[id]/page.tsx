@@ -23,6 +23,33 @@ export default function SharePage() {
   useEffect(() => {
     const fetchSharedResult = async () => {
       try {
+        // 1단계: 임시 공유인지 확인 (temp_로 시작하는 경우)
+        if (shareId && shareId.startsWith('temp_')) {
+          console.log('🔍 임시 공유 데이터 로딩 시도...')
+          
+          const tempData = localStorage.getItem(`temp_share_${shareId}`)
+          if (tempData) {
+            const shareData = JSON.parse(tempData)
+            
+            // 만료 시간 확인
+            const expiresAt = new Date(shareData.expiresAt)
+            if (new Date() > expiresAt) {
+              // 만료된 데이터 삭제
+              localStorage.removeItem(`temp_share_${shareId}`)
+              throw new Error('공유 링크가 만료되었습니다. (24시간 제한)')
+            }
+            
+            setAnalysisResult(shareData.analysisResult)
+            setDevelopmentTips(shareData.developmentTips)
+            setImagePreview(shareData.imagePreview)
+            console.log('✅ 임시 공유 데이터 로딩 완료')
+            return
+          } else {
+            throw new Error('임시 공유 데이터를 찾을 수 없습니다.')
+          }
+        }
+        
+        // 2단계: 정규 데이터베이스 공유 시도
         const response = await fetch(`/api/share?id=${shareId}`)
         
         if (!response.ok) {
@@ -34,6 +61,7 @@ export default function SharePage() {
         setAnalysisResult(data.analysisResult)
         setDevelopmentTips(data.developmentTips)
         setImagePreview(data.imagePreview)
+        console.log('✅ 데이터베이스 공유 데이터 로딩 완료')
       } catch (error) {
         console.error('공유 결과 로딩 오류:', error)
         setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')

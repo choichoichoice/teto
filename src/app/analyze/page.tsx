@@ -23,12 +23,68 @@ export default function AnalyzePage() {
 
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showCoupangProducts, setShowCoupangProducts] = useState(false)
+  
+  // 일일 분석 제한 관련 상태
+  const [dailyAnalysisCount, setDailyAnalysisCount] = useState(0)
+  const [isAnalysisLimitReached, setIsAnalysisLimitReached] = useState(false)
+  
   const { user } = useAuth()
+
+  // 일일 분석 제한 설정
+  const DAILY_ANALYSIS_LIMIT = 2
 
   // 사용자별 localStorage 키 생성 (보안 강화)
   const getUserStorageKey = (key: string, userId?: string) => {
     const targetUserId = userId || user?.id || 'anonymous'
     return `${key}_user_${targetUserId}`
+  }
+
+  // 오늘 날짜 문자열 생성 (YYYY-MM-DD)
+  const getTodayString = () => {
+    return new Date().toISOString().split('T')[0]
+  }
+
+  // 일일 분석 횟수 키 생성
+  const getDailyAnalysisKey = (userId?: string) => {
+    const targetUserId = userId || user?.id || 'anonymous'
+    const today = getTodayString()
+    return `dailyAnalysis_${today}_user_${targetUserId}`
+  }
+
+  // 오늘의 분석 횟수 조회
+  const getTodayAnalysisCount = () => {
+    try {
+      const key = getDailyAnalysisKey()
+      const count = localStorage.getItem(key)
+      return count ? parseInt(count, 10) : 0
+    } catch (error) {
+      console.error('분석 횟수 조회 실패:', error)
+      return 0
+    }
+  }
+
+  // 분석 횟수 증가
+  const incrementAnalysisCount = () => {
+    try {
+      const key = getDailyAnalysisKey()
+      const currentCount = getTodayAnalysisCount()
+      const newCount = currentCount + 1
+      localStorage.setItem(key, newCount.toString())
+      setDailyAnalysisCount(newCount)
+      setIsAnalysisLimitReached(newCount >= DAILY_ANALYSIS_LIMIT)
+      console.log(`📊 분석 횟수 증가: ${newCount}/${DAILY_ANALYSIS_LIMIT}`)
+      return newCount
+    } catch (error) {
+      console.error('분석 횟수 증가 실패:', error)
+      return 0
+    }
+  }
+
+  // 분석 횟수 상태 업데이트
+  const updateAnalysisLimitStatus = () => {
+    const count = getTodayAnalysisCount()
+    setDailyAnalysisCount(count)
+    setIsAnalysisLimitReached(count >= DAILY_ANALYSIS_LIMIT)
   }
 
   // 현재 사용자가 아닌 다른 사용자들의 민감한 데이터만 정리 (보안 강화)
@@ -133,6 +189,9 @@ export default function AnalyzePage() {
             setImagePreview(savedImagePreview)
           }
           
+          // 일일 분석 횟수 상태 업데이트
+          updateAnalysisLimitStatus()
+          
           console.log('✅ 개인 데이터 복원 완료')
         }, 100)
       } else {
@@ -170,6 +229,11 @@ export default function AnalyzePage() {
       console.log(`💾 개인 이미지 미리보기 저장: ${key}`)
     }
   }, [imagePreview, user?.id])
+
+  // 컴포넌트 마운트 시 일일 분석 횟수 확인
+  useEffect(() => {
+    updateAnalysisLimitStatus()
+  }, [])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -226,6 +290,13 @@ export default function AnalyzePage() {
       return
     }
 
+    // 일일 분석 제한 체크 💰
+    const currentCount = getTodayAnalysisCount()
+    if (currentCount >= DAILY_ANALYSIS_LIMIT) {
+      alert(`💰 일일 분석 제한에 도달했습니다!\n\n오늘은 ${DAILY_ANALYSIS_LIMIT}번의 분석을 모두 사용하셨어요.\n내일 다시 시도해주세요! 🌅\n\n(AI 분석 비용 절약을 위한 제한입니다)`)
+      return
+    }
+
     setIsAnalyzing(true)
     try {
       const formData = new FormData()
@@ -243,6 +314,10 @@ export default function AnalyzePage() {
       const result = await response.json()
       setAnalysisResult(result)
 
+      // 분석 성공 시 횟수 증가 💰
+      const newCount = incrementAnalysisCount()
+      console.log(`💰 분석 완료! 오늘 사용: ${newCount}/${DAILY_ANALYSIS_LIMIT}`)
+
       // 호르몬 강화 팁도 함께 가져오기
       const tipsResponse = await fetch('/api/tips', {
         method: 'POST',
@@ -256,6 +331,19 @@ export default function AnalyzePage() {
         const tips = await tipsResponse.json()
         setDevelopmentTips(tips)
       }
+
+      // 남은 횟수 안내
+      const remainingCount = DAILY_ANALYSIS_LIMIT - newCount
+      if (remainingCount > 0) {
+        setTimeout(() => {
+          alert(`✅ 분석 완료!\n\n오늘 남은 분석 횟수: ${remainingCount}번`)
+        }, 1000)
+      } else {
+        setTimeout(() => {
+          alert(`✅ 분석 완료!\n\n💰 오늘의 분석 횟수를 모두 사용했어요!\n내일 다시 만나요! 🌅`)
+        }, 1000)
+      }
+
     } catch (error) {
       console.error('분석 중 상세 에러:', error)
       alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.')
@@ -279,127 +367,178 @@ export default function AnalyzePage() {
     }
   }
 
-  const handleShare = async () => {
-    if (!analysisResult) return
-
-    try {
-      // 1단계: 데이터베이스 공유 시도 (Supabase가 설정된 경우)
-      const response = await fetch('/api/share', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          analysisResult,
-          imagePreview,
-          developmentTips,
-          userId: user?.id || null, // userId 없어도 허용
-        }),
-      })
-
-      let shareUrl
-      let shareTitle = `내 테토-에겐 분석 결과: ${analysisResult.type}`
-      let shareText = `AI가 분석한 내 테토-에겐 유형은 ${analysisResult.type}! 당신도 분석해보세요!`
+  // 친구에게 추천하기 - 사이트 자체를 공유 (카카오톡 로그인 사용자 우선 처리)
+  const handleRecommendToFriend = async () => {
+    const shareTitle = '테토-에겐 성격 분석 - 무료 AI 분석'
+    const shareText = '사진으로 내 테토-에겐 유형을 분석해보세요! 정말 재밌어요 😄'
+    const shareUrl = window.location.origin
+    
+    console.log('👥 친구에게 추천하기 시작...')
+    
+    // 카카오톡 로그인 사용자인지 확인
+    const isKakaoUser = user?.email?.includes('kakao.com') || 
+                       user?.user_metadata?.provider === 'kakao' ||
+                       user?.app_metadata?.provider === 'kakao'
+    
+    if (isKakaoUser) {
+      console.log('🟨 카카오톡 로그인 사용자 감지 - 카카오톡 우선 공유 시도!')
       
-      if (response.ok) {
-        // Supabase 공유 성공
-        const { shareId } = await response.json()
-        shareUrl = `${window.location.origin}/share/${shareId}`
-        console.log('✅ 데이터베이스 공유 성공:', shareUrl)
-      } else {
-        // Supabase 실패 시 사용자에게 명확하게 알림
-        console.log('❌ 데이터베이스 공유 실패')
-        const errorData = await response.json().catch(() => null)
-        
-        alert(`❌ 공유 기능을 사용할 수 없습니다.\n\n문제: 데이터베이스 연결이 설정되지 않았습니다.\n해결방법: 관리자에게 Supabase 설정을 요청해주세요.\n\n현재는 스크린샷을 찍어서 직접 공유해주세요! 📸`)
-        return
+      // 카카오톡 사용자에게 즉시 카카오톡 공유 제안
+      const wantKakaoShare = confirm(`🟨 카카오톡으로 로그인하셨네요!\n\n카카오톡으로 바로 친구들에게 추천할까요?\n\n✅ 확인: 카카오톡으로 추천\n❌ 취소: 다른 방법 선택`)
+      
+      if (wantKakaoShare) {
+        // 카카오톡 SDK 공유 시도
+        if ((window as any).Kakao && (window as any).Kakao.Share) {
+          try {
+            console.log('🔄 카카오톡 우선 공유 시도...')
+            
+            await (window as any).Kakao.Share.sendDefault({
+              objectType: 'feed',
+              content: {
+                title: shareTitle,
+                description: shareText,
+                imageUrl: `${window.location.origin}/tetoman.png`,
+                link: {
+                  mobileWebUrl: shareUrl,
+                  webUrl: shareUrl,
+                },
+              },
+              buttons: [
+                {
+                  title: '테토-에겐 분석하기',
+                  link: {
+                    mobileWebUrl: shareUrl,
+                    webUrl: shareUrl,
+                  },
+                },
+              ],
+            })
+            console.log('✅ 카카오톡 우선 추천 완료')
+            alert('친구에게 카카오톡으로 추천했어요! 🎉\n\n카카오톡 사용자라 더 빠르게 공유되었습니다!')
+            return
+          } catch (kakaoError) {
+            console.error('카카오톡 SDK 실패, 웹 공유로 전환:', kakaoError)
+            
+            // SDK 실패 시 카카오톡 웹 공유로 폴백
+            const kakaoWebUrl = `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+            window.open(kakaoWebUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes')
+            alert('카카오톡 웹 공유 페이지를 열었습니다! 📱')
+            return
+          }
+        } else {
+          // 카카오톡 SDK가 없으면 웹 공유
+          console.log('카카오톡 SDK 없음, 웹 공유로 진행')
+          const kakaoWebUrl = `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+          window.open(kakaoWebUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes')
+          alert('카카오톡 웹 공유 페이지를 열었습니다! 📱')
+          return
+        }
       }
-      
-      // 2단계: 공유 방법 선택
-      // 카카오톡 공유 가능한지 확인
-      if ((window as any).Kakao && (window as any).Kakao.Share) {
-        try {
-          console.log('🔄 카카오톡 공유 시도...')
-          
-          // 카카오톡 공유
-          await (window as any).Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: shareTitle,
-              description: shareText,
-              imageUrl: imagePreview || `${window.location.origin}/tetoman.png`,
+    }
+    
+    // 일반 사용자 또는 카카오톡 사용자가 다른 방법을 선택한 경우
+    console.log('📱 일반 공유 모드로 진행...')
+    
+    // 카카오톡 공유 가능한지 확인
+    if ((window as any).Kakao && (window as any).Kakao.Share) {
+      try {
+        console.log('🔄 카카오톡 공유 시도...')
+        
+        // 카카오톡 공유
+        await (window as any).Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: shareTitle,
+            description: shareText,
+            imageUrl: `${window.location.origin}/tetoman.png`,
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+          buttons: [
+            {
+              title: '테토-에겐 분석하기',
               link: {
                 mobileWebUrl: shareUrl,
                 webUrl: shareUrl,
               },
             },
-            buttons: [
-              {
-                title: '나도 분석하기',
-                link: {
-                  mobileWebUrl: window.location.origin,
-                  webUrl: window.location.origin,
-                },
-              },
-            ],
-          })
-          console.log('✅ 카카오톡 공유 완료')
-          alert('카카오톡으로 공유되었습니다! 🎉')
-          return
-        } catch (kakaoError) {
-          console.error('카카오톡 공유 실패:', kakaoError)
-        }
+          ],
+        })
+        console.log('✅ 카카오톡 추천 완료')
+        alert('친구에게 카카오톡으로 추천했어요! 🎉')
+        return
+      } catch (kakaoError) {
+        console.error('카카오톡 추천 실패:', kakaoError)
       }
-      
-      // 3단계: 웹 기본 공유 API 시도
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: shareTitle,
-            text: shareText,
-            url: shareUrl,
-          })
-          console.log('✅ 웹 공유 완료')
-          return
-        } catch (shareError) {
-          if (shareError.name !== 'AbortError') {
-            console.error('웹 공유 실패:', shareError)
-          }
-        }
-      }
-      
-      // 4단계: 폴백 - 클립보드 복사 + SNS 선택
+    }
+    
+    // 웹 기본 공유 API 시도
+    if (navigator.share) {
       try {
-        await navigator.clipboard.writeText(shareUrl)
-        console.log('✅ 클립보드 복사 완료')
-        
-        // 공유 옵션 모달
-        const shareOptions = [
-          { name: '카카오톡', url: `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}` },
-          { name: '페이스북', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
-          { name: '트위터', url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}` },
-        ]
-        
-        const userChoice = confirm(`🔗 링크가 클립보드에 복사되었습니다!\n\n어떤 방법으로 공유하시겠어요?\n\n✅ 확인: 카카오톡으로 공유\n❌ 취소: 직접 붙여넣기`)
-        
-        if (userChoice) {
-          // 카카오톡 웹 공유 페이지 열기
-          const kakaoShareUrl = `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
-          window.open(kakaoShareUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes')
-          console.log('✅ 카카오톡 웹 공유 페이지 열림')
-        } else {
-          alert('클립보드에 복사된 링크를 원하는 곳에 붙여넣어 주세요! 📋')
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        })
+        console.log('✅ 웹 추천 완료')
+        return
+      } catch (shareError) {
+        if ((shareError as any).name !== 'AbortError') {
+          console.error('웹 추천 실패:', shareError)
         }
-      } catch (clipboardError) {
-        console.error('클립보드 복사 실패:', clipboardError)
-        
-        // 마지막 수단: 프롬프트로 URL 표시
-        prompt('링크를 복사해서 공유해주세요:', shareUrl)
       }
+    }
+    
+    // 폴백 - 클립보드 복사
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`)
+      console.log('✅ 클립보드 복사 완료')
+      
+      const userChoice = confirm(`🔗 추천 메시지가 클립보드에 복사되었습니다!\n\n어떤 방법으로 친구에게 추천하시겠어요?\n\n✅ 확인: 카카오톡으로 추천\n❌ 취소: 직접 붙여넣기`)
+      
+      if (userChoice) {
+        // 카카오톡 웹 공유 페이지 열기
+        const kakaoShareUrl = `https://sharer.kakao.com/talk/friends/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+        window.open(kakaoShareUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes')
+        console.log('✅ 카카오톡 웹 추천 페이지 열림')
+      } else {
+        alert('클립보드에 복사된 메시지를 친구에게 보내주세요! 📋')
+      }
+    } catch (clipboardError) {
+      console.error('클립보드 복사 실패:', clipboardError)
+      prompt('링크를 복사해서 친구에게 공유해주세요:', `${shareText}\n${shareUrl}`)
+    }
+  }
+
+  // 분석결과 저장하기 - 로컬에 개인 분석 결과 저장
+  const handleSaveResult = () => {
+    if (!analysisResult) return
+    
+    try {
+      const savedResults = JSON.parse(localStorage.getItem('savedAnalysisResults') || '[]')
+      
+      const newResult = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        analysisResult,
+        developmentTips,
+        imagePreview,
+        savedAt: new Date().toLocaleString('ko-KR')
+      }
+      
+      // 최신 10개만 유지
+      const updatedResults = [newResult, ...savedResults].slice(0, 10)
+      
+      localStorage.setItem('savedAnalysisResults', JSON.stringify(updatedResults))
+      
+      console.log('💾 분석 결과 저장 완료')
+      alert('분석 결과가 저장되었습니다! 📁\n(최근 10개까지 보관됩니다)')
       
     } catch (error) {
-      console.error('공유 총 오류:', error)
-      alert('공유 중 오류가 발생했습니다. 다시 시도해주세요.')
+      console.error('분석 결과 저장 실패:', error)
+      alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.')
     }
   }
 
@@ -551,27 +690,54 @@ export default function AnalyzePage() {
                 </p>
               </div>
 
+              {/* 일일 분석 제한 상태 표시 */}
+              {user && (
+                <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 mb-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm" role="img" aria-label="money">💰</span>
+                    <p className="text-sm text-orange-700 font-medium text-center">
+                      오늘의 AI 분석: <span className="font-bold">{dailyAnalysisCount}/{DAILY_ANALYSIS_LIMIT}번</span> 사용
+                      {isAnalysisLimitReached ? 
+                        <span className="block text-xs text-orange-600 mt-1">내일 다시 이용해주세요! 🌅</span> :
+                        <span className="block text-xs text-orange-600 mt-1">남은 횟수: {DAILY_ANALYSIS_LIMIT - dailyAnalysisCount}번</span>
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {selectedImage && !analysisResult && (
                 <Button
                   onClick={handleAnalyze}
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || isAnalysisLimitReached}
                   size="lg"
-                  className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 h-auto rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
+                  className={`relative overflow-hidden ${
+                    isAnalysisLimitReached 
+                      ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                  } text-white text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 h-auto rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 ${
+                    isAnalysisLimitReached ? '' : 'transform hover:scale-105'
+                  }`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                                      <div className="relative flex items-center">
-                      {isAnalyzing ? (
-                        <>
-                          <Loader2 className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 animate-spin" />
-                          AI가 열심히 분석 중...
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-                          {user ? '✨ 분석 시작하기 ✨' : '✨ 로그인 후 분석하기 ✨'}
-                        </>
-                      )}
-                    </div>
+                  <div className="relative flex items-center">
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 animate-spin" />
+                        AI가 열심히 분석 중...
+                      </>
+                    ) : isAnalysisLimitReached ? (
+                      <>
+                        <span className="mr-2 sm:mr-3 text-base">💰</span>
+                        오늘 분석 완료 (내일 다시!)
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+                        {user ? '✨ 분석 시작하기 ✨' : '✨ 로그인 후 분석하기 ✨'}
+                      </>
+                    )}
+                  </div>
                 </Button>
               )}
             </div>
@@ -746,14 +912,22 @@ export default function AnalyzePage() {
                   </div>
                 )}
 
-                {/* 공유하기 및 호르몬 강화하기 버튼 */}
+                {/* 친구에게 추천하기 및 기타 버튼들 */}
                 <div className="text-center space-y-3">
                   <Button
-                    onClick={handleShare}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
+                    onClick={handleRecommendToFriend}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 text-sm"
                   >
                     <Share2 className="mr-2 h-4 w-4" />
-                    결과 공유하기
+                    친구에게 추천하기
+                  </Button>
+                  
+                  <Button
+                    onClick={handleSaveResult}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 text-sm"
+                  >
+                    <ImagePlus className="mr-2 h-4 w-4" />
+                    분석결과 저장하기
                   </Button>
                   
                   {/* 호르몬 강화하기 버튼 */}
