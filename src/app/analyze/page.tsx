@@ -573,22 +573,17 @@ export default function AnalyzePage() {
         }
       })
       
-      // 📱 심플한 워터마크 추가
+      // 📱 거의 안 보이는 워터마크 추가
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        ctx.fillStyle = '#6366f1'
-        ctx.font = 'bold 20px sans-serif'
-        ctx.textAlign = 'center'
-        const watermarkText = '테토-에겐 AI 분석 | teto-egen.com'
-        const textX = canvas.width / 2
-        const textY = canvas.height - 25
+        ctx.font = '12px sans-serif'
+        ctx.textAlign = 'right'
+        const watermarkText = 'teto-egen.com'
+        const textX = canvas.width - 15
+        const textY = canvas.height - 10
         
-        // 심플한 배경
-        const textMetrics = ctx.measureText(watermarkText)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
-        ctx.fillRect(textX - textMetrics.width/2 - 10, textY - 15, textMetrics.width + 20, 25)
-        
-        ctx.fillStyle = '#6366f1'
+        // 거의 투명한 워터마크
+        ctx.fillStyle = 'rgba(150, 150, 150, 0.3)'
         ctx.fillText(watermarkText, textX, textY)
       }
       
