@@ -47,10 +47,10 @@ export default function Home() {
               <div className="text-center">
                 <p className="text-xs text-gray-300 mb-2">친구들과 함께 테스트해보세요!</p>
                 <KakaoShare
-                  title="테토-에겐 분석기 🔮"
-                  description="AI가 사진을 분석해서 테토남/테토녀/에겐남/에겐녀 유형을 무료로 알려줘요! #테토에겐 #성격분석 #AI분석"
-                  imageUrl="https://via.placeholder.com/400x300/6366f1/ffffff?text=TETO+AI"
-                  webUrl={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
+                  title="🔮 테토-에겐 분석기 | AI 얼굴 분석"
+                  description="나는 테토일까 에겐일까? AI가 사진으로 성격 유형을 분석해드려요! 무료 테스트 해보세요 ✨ #테토에겐 #성격분석"
+                  imageUrl="/tetoman.png"
+                  url={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
                 />
               </div>
             </div>
