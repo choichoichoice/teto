@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import KakaoShare from '@/components/KakaoShare';
+import KakaoShareAdvanced from '@/components/KakaoShareAdvanced';
 
 export default function TestKakaoPage() {
   const [kakaoStatus, setKakaoStatus] = useState<string>('확인 중...');
@@ -95,14 +96,21 @@ export default function TestKakaoPage() {
         </div>
 
         {/* 컴포넌트 테스트 */}
-        <div className="p-4 border rounded-lg">
-          <h2 className="font-semibold mb-4">KakaoShare 컴포넌트 테스트</h2>
-          <KakaoShare
-            title="테토-에겐 분석기 테스트"
-            description="컴포넌트를 통한 카카오톡 공유 테스트입니다."
-            imageUrl="https://via.placeholder.com/400x300/6366f1/ffffff?text=Component+Test"
-            webUrl={typeof window !== 'undefined' ? window.location.href : ''}
-          />
+        <div className="p-4 border rounded-lg space-y-4">
+          <div>
+            <h2 className="font-semibold mb-2">기본 KakaoShare 컴포넌트</h2>
+            <KakaoShare
+              title="테토-에겐 분석기 테스트"
+              description="컴포넌트를 통한 카카오톡 공유 테스트입니다."
+              imageUrl="https://via.placeholder.com/400x300/6366f1/ffffff?text=Component+Test"
+              webUrl={typeof window !== 'undefined' ? window.location.href : ''}
+            />
+          </div>
+          
+          <div>
+            <h2 className="font-semibold mb-2">고급 KakaoShare 컴포넌트 (itemContent 포함)</h2>
+            <KakaoShareAdvanced />
+          </div>
         </div>
 
         {/* 직접 테스트 */}
