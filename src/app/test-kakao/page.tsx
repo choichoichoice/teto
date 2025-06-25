@@ -84,9 +84,13 @@ export default function TestKakaoPage() {
             <div className="text-xs space-y-1">
               <p><strong>환경변수 존재:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY ? '✅ 있음' : '❌ 없음'}</p>
               <p><strong>키 길이:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY?.length || 0}자</p>
-              <p><strong>키 시작 4글자:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY?.substring(0, 4) || '없음'}</p>
+              <p><strong>키 전체:</strong> <code className="bg-gray-100 px-1 rounded text-xs">{process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY || '없음'}</code></p>
+              <p><strong>예상 키 일치:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY === '61b9975f47847e33120f984735ebc7a7' ? '✅ 맞음' : '❌ 다름'}</p>
               <p><strong>window.Kakao 존재:</strong> {typeof window !== 'undefined' && window.Kakao ? '✅ 있음' : '❌ 없음'}</p>
               <p><strong>초기화 상태:</strong> {typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized ? window.Kakao.isInitialized() ? '✅ 완료' : '❌ 미완료' : '확인불가'}</p>
+              {typeof window !== 'undefined' && window.Kakao && (
+                <p><strong>SDK 버전:</strong> {window.Kakao.VERSION || '알 수 없음'}</p>
+              )}
             </div>
           </div>
           
@@ -133,42 +137,49 @@ export default function TestKakaoPage() {
         {/* 강제 초기화 버튼 */}
         <div className="p-4 border rounded-lg bg-red-50">
           <h2 className="font-semibold mb-2">🚨 긴급 해결책</h2>
-          <button
-            onClick={() => {
-              if (window.Kakao) {
-                try {
-                  // 강제로 다시 초기화 시도
-                  const key = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-                  if (key) {
-                    window.Kakao.init(key);
-                    alert('강제 초기화 시도 완료! 다시 공유 버튼을 눌러보세요.');
-                  } else {
-                    alert('환경변수가 없습니다! .env.local 파일을 확인해주세요.');
+          <div className="space-x-2 space-y-2">
+            <button
+              onClick={() => {
+                const expectedKey = '61b9975f47847e33120f984735ebc7a7';
+                const actualKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+                
+                console.log('=== 키 비교 ===');
+                console.log('예상 키:', expectedKey);
+                console.log('실제 키:', actualKey);
+                console.log('일치 여부:', expectedKey === actualKey);
+                
+                if (window.Kakao) {
+                  try {
+                    // 직접 키 사용해서 초기화
+                    window.Kakao.init(expectedKey);
+                    console.log('✅ 직접 키로 초기화 성공');
+                    alert('직접 키로 초기화 완료! 이제 공유 버튼을 눌러보세요.');
+                  } catch (error) {
+                    console.error('❌ 직접 키로 초기화 실패:', error);
+                    alert(`초기화 실패: ${error}`);
                   }
-                } catch (error) {
-                  alert(`초기화 실패: ${error}`);
+                } else {
+                  alert('카카오 SDK가 로드되지 않았습니다.');
                 }
-              } else {
-                alert('카카오 SDK가 로드되지 않았습니다.');
-              }
-            }}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-4"
-          >
-            강제로 카카오 SDK 다시 초기화
-          </button>
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              🔧 직접 키로 강제 초기화
+            </button>
           
-          <button
-            onClick={() => {
-              console.log('=== 디버깅 정보 ===');
-              console.log('환경변수:', process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
-              console.log('window.Kakao:', window.Kakao);
-              console.log('초기화 상태:', window.Kakao?.isInitialized());
-              alert('콘솔을 확인해주세요! (F12 → Console)');
-            }}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            콘솔에 전체 정보 출력
-          </button>
+            <button
+              onClick={() => {
+                console.log('=== 디버깅 정보 ===');
+                console.log('환경변수:', process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
+                console.log('window.Kakao:', window.Kakao);
+                console.log('초기화 상태:', window.Kakao?.isInitialized());
+                alert('콘솔을 확인해주세요! (F12 → Console)');
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              콘솔에 전체 정보 출력
+            </button>
+          </div>
         </div>
 
         {/* 환경 정보 */}
