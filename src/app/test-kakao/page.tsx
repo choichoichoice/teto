@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import KakaoShare from '@/components/KakaoShare';
 import KakaoShareAdvanced from '@/components/KakaoShareAdvanced';
+import KakaoShareSimple from '@/components/KakaoShareSimple';
 
 export default function TestKakaoPage() {
   const [kakaoStatus, setKakaoStatus] = useState<string>('확인 중...');
@@ -110,6 +111,11 @@ export default function TestKakaoPage() {
           <div>
             <h2 className="font-semibold mb-2">고급 KakaoShare 컴포넌트 (itemContent 포함)</h2>
             <KakaoShareAdvanced />
+          </div>
+          
+          <div>
+            <h2 className="font-semibold mb-2">⚡ 간단한 KakaoShare (sendDefault 방식)</h2>
+            <KakaoShareSimple />
           </div>
         </div>
 
