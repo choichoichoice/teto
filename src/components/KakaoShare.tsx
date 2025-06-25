@@ -25,32 +25,49 @@ export default function KakaoShare({
 }: KakaoShareProps) {
   
   const shareToKakao = () => {
+    console.log('카카오톡 공유 버튼 클릭됨');
+    
     if (!window.Kakao) {
-      alert('카카오톡 SDK가 로드되지 않았습니다.');
+      console.error('Kakao SDK가 로드되지 않음');
+      alert('카카오톡 SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
       return;
     }
 
-    window.Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: title,
-        description: description,
-        imageUrl: imageUrl,
-        link: {
-          mobileWebUrl: mobileWebUrl,
-          webUrl: webUrl,
-        },
-      },
-      buttons: [
-        {
-          title: '웹으로 보기',
+    if (!window.Kakao.isInitialized()) {
+      console.error('Kakao SDK가 초기화되지 않음');
+      alert('카카오톡 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    console.log('카카오톡 공유 실행 중...');
+    
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: title,
+          description: description,
+          imageUrl: imageUrl,
           link: {
             mobileWebUrl: mobileWebUrl,
             webUrl: webUrl,
           },
         },
-      ],
-    });
+        buttons: [
+          {
+            title: '웹으로 보기',
+            link: {
+              mobileWebUrl: mobileWebUrl,
+              webUrl: webUrl,
+            },
+          },
+        ],
+      });
+      console.log('카카오톡 공유 성공');
+    } catch (error) {
+      console.error('카카오톡 공유 실패:', error);
+      alert('카카오톡 공유에 실패했습니다. 브라우저 콘솔을 확인해주세요.');
+    }
   };
 
   return (
