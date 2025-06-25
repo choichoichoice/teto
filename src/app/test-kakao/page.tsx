@@ -1,15 +1,55 @@
 'use client';
 
 import KakaoShare from '@/components/KakaoShare';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TestKakaoPage() {
   const [testData, setTestData] = useState({
     title: '테토-에겐 분석 결과',
     description: '당신은 테토남 유형입니다! AI가 분석한 결과를 확인해보세요.',
     imageUrl: '/tetoman.png',
-    linkUrl: window?.location?.origin + '/analyze' || 'https://localhost:3000/analyze'
+    linkUrl: 'https://localhost:3002/analyze'
   });
+
+  const [userAgent, setUserAgent] = useState('로딩 중...');
+
+  useEffect(() => {
+    // 클라이언트 사이드에서만 실행
+    if (typeof window !== 'undefined') {
+      setTestData(prev => ({
+        ...prev,
+        linkUrl: window.location.origin + '/analyze'
+      }));
+      setUserAgent(navigator.userAgent);
+
+      // 카카오 SDK 상태 체크 함수
+      const checkKakaoStatus = () => {
+        const statusElement = document.getElementById('kakao-status');
+        if (statusElement) {
+          if (window.Kakao) {
+            if (window.Kakao.isInitialized()) {
+              statusElement.textContent = '✅ 초기화 완료';
+              statusElement.className = 'text-green-600';
+            } else {
+              statusElement.textContent = '⚠️ SDK 로드됨, 초기화 대기 중';
+              statusElement.className = 'text-yellow-600';
+            }
+          } else {
+            statusElement.textContent = '❌ SDK 로드되지 않음';
+            statusElement.className = 'text-red-600';
+          }
+        }
+      };
+
+      // 초기 체크
+      checkKakaoStatus();
+      
+      // 1초마다 상태 체크
+      const interval = setInterval(checkKakaoStatus, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setTestData(prev => ({
@@ -133,34 +173,11 @@ export default function TestKakaoPage() {
             
             <div className="p-2 bg-gray-100 rounded">
               <strong>브라우저:</strong>{' '}
-              <span className="text-purple-600">{navigator.userAgent}</span>
+              <span className="text-purple-600">{userAgent}</span>
             </div>
           </div>
         </div>
       </div>
-      
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          function checkKakaoStatus() {
-            const statusElement = document.getElementById('kakao-status');
-            if (window.Kakao) {
-              if (window.Kakao.isInitialized()) {
-                statusElement.textContent = '✅ 초기화 완료';
-                statusElement.className = 'text-green-600';
-              } else {
-                statusElement.textContent = '⚠️ SDK 로드됨, 초기화 대기 중';
-                statusElement.className = 'text-yellow-600';
-              }
-            } else {
-              statusElement.textContent = '❌ SDK 로드되지 않음';
-              statusElement.className = 'text-red-600';
-            }
-          }
-          
-          setInterval(checkKakaoStatus, 1000);
-          checkKakaoStatus();
-        `
-      }} />
     </div>
   );
 } 

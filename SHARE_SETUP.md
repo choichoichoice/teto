@@ -59,7 +59,7 @@ Supabase 대시보드의 SQL Editor에서 `database_setup.sql` 파일의 내용�
 
 #### 환경 변수 추가
 ```env
-NEXT_PUBLIC_KAKAO_APP_KEY=61b9975f47847e33120f984735ebc7a7
+NEXT_PUBLIC_KAKAO_APP_KEY=your_kakao_app_key_here
 ```
 
 ## 사용법 변화
