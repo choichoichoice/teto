@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -23,64 +23,102 @@ export default function KakaoShare({
   webUrl,
   mobileWebUrl = webUrl
 }: KakaoShareProps) {
+  const buttonRef = useRef<HTMLDivElement>(null);
   
-  const shareToKakao = () => {
-    console.log('카카오톡 공유 버튼 클릭됨');
-    
-    if (!window.Kakao) {
-      console.error('Kakao SDK가 로드되지 않음');
-      alert('카카오톡 SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
-      return;
-    }
+  useEffect(() => {
+    const initKakaoButton = () => {
+      if (!window.Kakao) {
+        console.error('Kakao SDK가 로드되지 않음');
+        return;
+      }
 
-    if (!window.Kakao.isInitialized()) {
-      console.error('Kakao SDK가 초기화되지 않음');
-      alert('카카오톡 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
-      return;
-    }
+      if (!window.Kakao.isInitialized()) {
+        console.error('Kakao SDK가 초기화되지 않음');
+        return;
+      }
 
-    console.log('카카오톡 공유 실행 중...');
-    
-    try {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: title,
-          description: description,
-          imageUrl: imageUrl,
-          link: {
-            mobileWebUrl: mobileWebUrl,
-            webUrl: webUrl,
-          },
-        },
-        buttons: [
-          {
-            title: '웹으로 보기',
-            link: {
-              mobileWebUrl: mobileWebUrl,
-              webUrl: webUrl,
+      if (buttonRef.current) {
+        console.log('카카오 버튼 생성 중...');
+        
+        try {
+          // 기존 버튼이 있다면 제거
+          buttonRef.current.innerHTML = '';
+          
+          window.Kakao.Share.createDefaultButton({
+            container: buttonRef.current,
+            objectType: 'feed',
+            content: {
+              title: title,
+              description: description,
+              imageUrl: imageUrl,
+              link: {
+                mobileWebUrl: mobileWebUrl,
+                webUrl: webUrl,
+              },
             },
-          },
-        ],
-      });
-      console.log('카카오톡 공유 성공');
-    } catch (error) {
-      console.error('카카오톡 공유 실패:', error);
-      alert('카카오톡 공유에 실패했습니다. 브라우저 콘솔을 확인해주세요.');
-    }
-  };
+            social: {
+              likeCount: 286,
+              commentCount: 45,
+              sharedCount: 845,
+            },
+            buttons: [
+              {
+                title: '웹으로 보기',
+                link: {
+                  mobileWebUrl: mobileWebUrl,
+                  webUrl: webUrl,
+                },
+              },
+            ],
+          });
+          
+          console.log('✅ 카카오 버튼 생성 완료');
+        } catch (error) {
+          console.error('❌ 카카오 버튼 생성 실패:', error);
+          
+          // 실패시 수동 버튼으로 대체
+          if (buttonRef.current) {
+            buttonRef.current.innerHTML = `
+              <button class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-medium rounded-lg transition-colors">
+                <img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="카카오톡 공유" class="w-6 h-6">
+                카카오톡 공유하기 (수동)
+              </button>
+            `;
+            
+            buttonRef.current.onclick = () => {
+              alert('카카오 버튼 생성에 실패했습니다. 콘솔을 확인해주세요.');
+            };
+          }
+        }
+      }
+    };
+
+    // SDK가 준비될 때까지 기다림
+    const checkAndInit = () => {
+      if (window.Kakao && window.Kakao.isInitialized()) {
+        initKakaoButton();
+      } else {
+        setTimeout(checkAndInit, 100);
+      }
+    };
+
+    checkAndInit();
+  }, [title, description, imageUrl, webUrl, mobileWebUrl]);
 
   return (
-    <button
-      onClick={shareToKakao}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-medium rounded-lg transition-colors"
+    <div 
+      ref={buttonRef}
+      className="inline-block"
     >
-      <img 
-        src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
-        alt="카카오톡 공유 보내기 버튼"
-        className="w-6 h-6"
-      />
-      카카오톡 공유하기
-    </button>
+      {/* 로딩 중 표시 */}
+      <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 font-medium rounded-lg">
+        <img 
+          src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
+          alt="카카오톡 공유 로딩 중"
+          className="w-6 h-6 opacity-50"
+        />
+        로딩 중...
+      </button>
+    </div>
   );
 } 

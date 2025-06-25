@@ -76,10 +76,21 @@ export default function TestKakaoPage() {
           <h2 className="font-semibold mb-2">카카오 SDK 상태</h2>
           <p className="text-sm">{kakaoStatus}</p>
           
+          {/* 환경변수 직접 확인 */}
+          <div className="mt-4 p-3 bg-white rounded border">
+            <h3 className="font-medium text-sm mb-2">🔍 실시간 디버깅</h3>
+            <div className="text-xs space-y-1">
+              <p><strong>환경변수 존재:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY ? '✅ 있음' : '❌ 없음'}</p>
+              <p><strong>키 길이:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY?.length || 0}자</p>
+              <p><strong>키 시작 4글자:</strong> {process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY?.substring(0, 4) || '없음'}</p>
+              <p><strong>window.Kakao 존재:</strong> {typeof window !== 'undefined' && window.Kakao ? '✅ 있음' : '❌ 없음'}</p>
+              <p><strong>초기화 상태:</strong> {typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized ? window.Kakao.isInitialized() ? '✅ 완료' : '❌ 미완료' : '확인불가'}</p>
+            </div>
+          </div>
+          
           <div className="mt-4 text-xs space-y-1 text-gray-600">
             <p>• 브라우저 개발자 도구(F12) → Console 탭에서 로그 확인</p>
             <p>• 카카오 개발자센터에서 도메인 등록 확인 필요</p>
-            <p>• NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY 환경변수 확인</p>
           </div>
         </div>
 
@@ -105,14 +116,55 @@ export default function TestKakaoPage() {
           </button>
         </div>
 
+        {/* 강제 초기화 버튼 */}
+        <div className="p-4 border rounded-lg bg-red-50">
+          <h2 className="font-semibold mb-2">🚨 긴급 해결책</h2>
+          <button
+            onClick={() => {
+              if (window.Kakao) {
+                try {
+                  // 강제로 다시 초기화 시도
+                  const key = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+                  if (key) {
+                    window.Kakao.init(key);
+                    alert('강제 초기화 시도 완료! 다시 공유 버튼을 눌러보세요.');
+                  } else {
+                    alert('환경변수가 없습니다! .env.local 파일을 확인해주세요.');
+                  }
+                } catch (error) {
+                  alert(`초기화 실패: ${error}`);
+                }
+              } else {
+                alert('카카오 SDK가 로드되지 않았습니다.');
+              }
+            }}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-4"
+          >
+            강제로 카카오 SDK 다시 초기화
+          </button>
+          
+          <button
+            onClick={() => {
+              console.log('=== 디버깅 정보 ===');
+              console.log('환경변수:', process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
+              console.log('window.Kakao:', window.Kakao);
+              console.log('초기화 상태:', window.Kakao?.isInitialized());
+              alert('콘솔을 확인해주세요! (F12 → Console)');
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            콘솔에 전체 정보 출력
+          </button>
+        </div>
+
         {/* 환경 정보 */}
         <div className="p-4 border rounded-lg bg-yellow-50">
-          <h2 className="font-semibold mb-2">체크리스트</h2>
-          <ul className="text-sm space-y-1">
-            <li>□ .env.local에 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY 설정</li>
-            <li>□ 카카오 개발자센터에서 JavaScript 키 발급</li>
-            <li>□ 카카오 개발자센터 플랫폼 설정에서 도메인 등록 (localhost:3000)</li>
-            <li>□ 브라우저 콘솔에서 에러 메시지 확인</li>
+          <h2 className="font-semibold mb-2">📋 자주 발생하는 문제들</h2>
+          <ul className="text-sm space-y-2">
+            <li><strong>1. 환경변수 문제:</strong> .env.local에서 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY=실제키값 (공백없이!)</li>
+            <li><strong>2. 도메인 미등록:</strong> 카카오 개발자센터 → 앱 → 플랫폼 → 웹 → http://localhost:3000 추가</li>
+            <li><strong>3. 잘못된 키:</strong> JavaScript 키 (네이티브 앱 키가 아님!)</li>
+            <li><strong>4. 브라우저 캐시:</strong> Ctrl+Shift+R로 강력 새로고침</li>
           </ul>
         </div>
       </div>
