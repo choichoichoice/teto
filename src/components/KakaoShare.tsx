@@ -40,7 +40,7 @@ export default function KakaoShare({
     try {
       console.log('📱 카카오톡 공유 시작...');
       
-      await window.Kakao.Share.sendDefault({
+      await window.Kakao.Link.sendDefault({
         objectType: 'feed',
         content: {
           title: title,
