@@ -6,6 +6,7 @@ import { Camera, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
 import ParticlesBg from "@/components/ParticlesBg";
 import AuthStatus from "@/components/AuthStatus";
 import AdBanner from "@/components/AdBanner";
+import KakaoShare from "@/components/KakaoShare";
 import { Suspense } from 'react';
 
 export default function Home() {
@@ -30,7 +31,7 @@ export default function Home() {
             <p className="text-sm sm:text-base mb-4 text-gray-200 leading-relaxed px-2">
               AI가 사진을 분석하여 테토-에겐 유형을 무료로 알려드립니다.
             </p>
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center space-y-3">
               <Button 
                 size="sm" 
                 asChild
@@ -42,6 +43,16 @@ export default function Home() {
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </Button>
+              
+              <div className="text-center">
+                <p className="text-xs text-gray-300 mb-2">친구들과 함께 테스트해보세요!</p>
+                <KakaoShare
+                  title="테토-에겐 분석기 🔮"
+                  description="AI가 사진을 분석해서 테토남/테토녀/에겐남/에겐녀 유형을 무료로 알려줘요! #테토에겐 #성격분석 #AI분석"
+                  imageUrl="https://via.placeholder.com/400x300/6366f1/ffffff?text=TETO+AI"
+                  webUrl={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
+                />
+              </div>
             </div>
           </div>
         </div>

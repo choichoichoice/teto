@@ -1,39 +1,50 @@
 'use client'
 
 import { useEffect } from 'react'
+import Script from 'next/script'
+
+declare global {
+  interface Window {
+    Kakao: any
+  }
+}
 
 export default function KakaoSDK() {
   useEffect(() => {
     // DOM이 완전히 로드된 후 카카오 SDK 초기화
     const initKakao = () => {
-      if ((window as any).Kakao && !(window as any).Kakao.isInitialized()) {
-        // 개발 환경에서는 테스트 앱 키, 운영에서는 실제 키 사용
-        const kakaoKey = process.env.NODE_ENV === 'development' 
-          ? 'demo_key_for_development' 
-          : process.env.NEXT_PUBLIC_KAKAO_APP_KEY || 'demo_key_for_development'
-        
-        try {
-          (window as any).Kakao.init(kakaoKey)
-          console.log('✅ 카카오 SDK 초기화 완료')
-        } catch (error) {
-          console.warn('⚠️ 카카오 SDK 초기화 실패 (데모 모드):', error)
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        // 여기에 실제 JavaScript 키를 넣어주세요
+        const JAVASCRIPT_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY
+        if (JAVASCRIPT_KEY) {
+          window.Kakao.init(JAVASCRIPT_KEY)
+          console.log('Kakao SDK 초기화 완료')
+        } else {
+          console.error('카카오 JavaScript 키가 설정되지 않았습니다.')
         }
       }
     }
 
-    // 카카오 SDK가 로드될 때까지 기다린 후 초기화
-    const checkKakaoInterval = setInterval(() => {
-      if ((window as any).Kakao) {
-        clearInterval(checkKakaoInterval)
-        initKakao()
-      }
-    }, 100)
-
-    // 컴포넌트 언마운트 시 인터벌 정리
-    return () => {
-      clearInterval(checkKakaoInterval)
+    // SDK가 이미 로드된 경우
+    if (window.Kakao) {
+      initKakao()
+    } else {
+      // SDK 로드를 기다림
+      const checkKakao = setInterval(() => {
+        if (window.Kakao) {
+          initKakao()
+          clearInterval(checkKakao)
+        }
+      }, 100)
     }
   }, [])
 
-  return null // UI를 렌더링하지 않는 유틸리티 컴포넌트
+  return (
+    <Script
+      src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js"
+      integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6"
+      crossOrigin="anonymous"
+      strategy="afterInteractive"
+    />
+  )
 } 
