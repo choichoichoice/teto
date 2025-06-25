@@ -23,12 +23,6 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
-        {/* 카카오 SDK 로드 */}
-        <Script 
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
-          strategy="beforeInteractive"
-        />
-        
         <Providers>
           <KakaoSDK />
           <div className="min-h-screen flex flex-col">

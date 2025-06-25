@@ -1,6 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
+interface KakaoShareProps {
+  title: string;
+  description: string;
+  imageUrl?: string;
+  linkUrl: string;
+  className?: string;
+  children?: React.ReactNode;
+}
 
 declare global {
   interface Window {
@@ -8,81 +17,96 @@ declare global {
   }
 }
 
-interface KakaoShareProps {
-  title: string;
-  description: string;
-  imageUrl: string;
-  url: string;
-}
+export default function KakaoShare({
+  title,
+  description,
+  imageUrl,
+  linkUrl,
+  className = '',
+  children
+}: KakaoShareProps) {
+  const [isSharing, setIsSharing] = useState(false);
 
-export default function KakaoShare({ title, description, imageUrl, url }: KakaoShareProps) {
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    const checkKakao = () => {
-      if (window.Kakao && window.Kakao.isInitialized()) {
-        setIsReady(true);
-        console.log('✅ 카카오 SDK 준비 완료');
-      } else {
-        console.log('⏳ 카카오 SDK 대기 중...');
-        setTimeout(checkKakao, 100);
-      }
-    };
-
-    checkKakao();
-  }, []);
-
-  const handleShare = () => {
-    if (!window.Kakao || !window.Kakao.isInitialized()) {
-      alert('카카오 SDK가 준비되지 않았습니다. 잠시 후 다시 시도해주세요.');
+  const handleKakaoShare = async () => {
+    if (!window.Kakao?.isInitialized()) {
+      console.error('카카오 SDK가 초기화되지 않았습니다.');
+      alert('카카오톡 공유 기능을 사용할 수 없습니다.');
       return;
     }
 
+    setIsSharing(true);
+
     try {
-      window.Kakao.Share.sendDefault({
+      await window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title,
-          description,
-          imageUrl,
+          title: title,
+          description: description,
+          imageUrl: imageUrl || '/tetoman.png',
           link: {
-            mobileWebUrl: url,
-            webUrl: url,
+            mobileWebUrl: linkUrl,
+            webUrl: linkUrl,
           },
         },
         buttons: [
           {
-            title: '웹으로 보기',
+            title: '결과 보기',
             link: {
-              mobileWebUrl: url,
-              webUrl: url,
+              mobileWebUrl: linkUrl,
+              webUrl: linkUrl,
             },
           },
         ],
       });
-      console.log('✅ 카카오톡 공유 성공');
+      console.log('카카오톡 공유 성공!');
     } catch (error) {
-      console.error('❌ 카카오톡 공유 실패:', error);
-      alert('공유에 실패했습니다.');
+      console.error('카카오톡 공유 실패:', error);
+      // 폴백: 웹 공유 또는 링크 복사
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: title,
+            text: description,
+            url: linkUrl,
+          });
+        } catch (shareError) {
+          console.log('웹 공유 취소됨');
+        }
+      } else {
+        // 클립보드에 링크 복사
+        try {
+          await navigator.clipboard.writeText(linkUrl);
+          alert('링크가 클립보드에 복사되었습니다!');
+        } catch (clipboardError) {
+          alert(`공유 링크: ${linkUrl}`);
+        }
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
   return (
     <button
-      onClick={handleShare}
-      disabled={!isReady}
-      className={`inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-all ${
-        isReady
-          ? 'bg-yellow-400 hover:bg-yellow-500 text-black'
-          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-      }`}
+      onClick={handleKakaoShare}
+      disabled={isSharing}
+      className={`
+        bg-yellow-400 hover:bg-yellow-500 
+        text-black font-bold py-2 px-4 rounded-lg
+        transition-colors duration-200
+        disabled:opacity-50 disabled:cursor-not-allowed
+        ${className}
+      `}
     >
-      <img 
-        src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
-        alt="카카오톡 공유하기"
-        className="w-6 h-6"
-      />
-      {isReady ? '카카오톡 공유하기' : '로딩 중...'}
+      {isSharing ? (
+        <span>공유 중...</span>
+      ) : (
+        children || (
+          <span className="flex items-center gap-2">
+            📱 카카오톡 공유
+          </span>
+        )
+      )}
     </button>
   );
 } 
