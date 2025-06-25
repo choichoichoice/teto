@@ -28,15 +28,18 @@ export default function KakaoShare({
   const [isSharing, setIsSharing] = useState(false);
 
   const handleKakaoShare = async () => {
+    // 사용자 제안: 간단한 초기화 상태 체크
     if (!window.Kakao?.isInitialized()) {
-      console.error('카카오 SDK가 초기화되지 않았습니다.');
-      alert('카카오톡 공유 기능을 사용할 수 없습니다.');
+      console.error('❌ 카카오 SDK가 초기화되지 않았습니다.');
+      alert('카카오톡 공유 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.');
       return;
     }
 
     setIsSharing(true);
 
     try {
+      console.log('📱 카카오톡 공유 시작...');
+      
       await window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
@@ -58,10 +61,13 @@ export default function KakaoShare({
           },
         ],
       });
-      console.log('카카오톡 공유 성공!');
+      
+      console.log('🎉 카카오톡 공유 성공!');
+      
     } catch (error) {
-      console.error('카카오톡 공유 실패:', error);
-      // 폴백: 웹 공유 또는 링크 복사
+      console.error('❌ 카카오톡 공유 실패:', error);
+      
+      // 폴백 시스템
       if (navigator.share) {
         try {
           await navigator.share({
@@ -69,20 +75,27 @@ export default function KakaoShare({
             text: description,
             url: linkUrl,
           });
+          console.log('✅ 웹 공유 성공');
         } catch (shareError) {
           console.log('웹 공유 취소됨');
+          copyToClipboard();
         }
       } else {
-        // 클립보드에 링크 복사
-        try {
-          await navigator.clipboard.writeText(linkUrl);
-          alert('링크가 클립보드에 복사되었습니다!');
-        } catch (clipboardError) {
-          alert(`공유 링크: ${linkUrl}`);
-        }
+        copyToClipboard();
       }
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+      alert('📋 링크가 클립보드에 복사되었습니다!');
+      console.log('✅ 클립보드 복사 성공');
+    } catch (clipboardError) {
+      console.log('클립보드 복사 실패');
+      alert(`📝 링크를 수동으로 복사해주세요:\n${linkUrl}`);
     }
   };
 

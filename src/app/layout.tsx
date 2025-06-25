@@ -4,8 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
-import KakaoSDK from "@/components/KakaoSDK";
-import Script from "next/script";
+import KakaoInit from "@/components/KakaoInit";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +22,16 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
+        {/* 카카오 SDK 로드 */}
+        <script 
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" 
+          crossOrigin="anonymous"
+          async
+        />
+        
         <Providers>
-          <KakaoSDK />
+          {/* 사용자 제안 방식: 앱 전체에서 딱 한 번만 초기화 */}
+          <KakaoInit />
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1">
