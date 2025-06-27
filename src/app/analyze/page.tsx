@@ -34,6 +34,10 @@ export default function AnalyzePage() {
   const [isSavingImage, setIsSavingImage] = useState(false)
   const analysisResultRef = useRef<HTMLDivElement>(null)
   
+  // 카운트다운 관련 상태
+  const [countdown, setCountdown] = useState(0)
+  const [isCountingDown, setIsCountingDown] = useState(false)
+  
   const { user } = useAuth()
 
   // 일일 분석 제한 설정
@@ -287,6 +291,30 @@ export default function AnalyzePage() {
     }
   }
 
+  // 카운트다운 시작
+  const startCountdown = () => {
+    setCountdown(10)
+    setIsCountingDown(true)
+    
+    const countdownInterval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          // 카운트다운이 끝났지만 아직 로딩 중이면 다시 시작
+          if (isAnalyzing) {
+            return 10 // 다시 10초부터 시작
+          } else {
+            setIsCountingDown(false)
+            clearInterval(countdownInterval)
+            return 0
+          }
+        }
+        return prev - 1
+      })
+    }, 1000)
+    
+    return countdownInterval
+  }
+
   const handleAnalyze = async () => {
     if (!selectedImage) return
 
@@ -304,6 +332,9 @@ export default function AnalyzePage() {
     }
 
     setIsAnalyzing(true)
+    
+    // 카운트다운 시작
+    const countdownInterval = startCountdown()
     try {
       const formData = new FormData()
       formData.append('image', selectedImage)
@@ -355,6 +386,11 @@ export default function AnalyzePage() {
       alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.')
     } finally {
       setIsAnalyzing(false)
+      setIsCountingDown(false)
+      setCountdown(0)
+      if (countdownInterval) {
+        clearInterval(countdownInterval)
+      }
     }
   }
 
@@ -1025,7 +1061,16 @@ export default function AnalyzePage() {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 animate-spin" />
-                        AI가 열심히 분석 중...
+                        {isCountingDown ? (
+                          <span className="flex items-center">
+                            AI가 열심히 분석 중... 
+                            <span className="ml-2 text-lg font-bold text-yellow-600 animate-pulse">
+                              {countdown}
+                            </span>
+                          </span>
+                        ) : (
+                          'AI가 열심히 분석 중...'
+                        )}
                       </>
                     ) : isAnalysisLimitReached ? (
                       <>
@@ -1121,9 +1166,6 @@ export default function AnalyzePage() {
                       </h2>
                       <p className="text-sm text-gray-600 mb-2">
                         {analysisResult.summary}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        신뢰도: {analysisResult.confidence}%
                       </p>
                     </div>
                   </div>
@@ -1255,7 +1297,7 @@ export default function AnalyzePage() {
                      <div className="text-center space-y-3">
                        <KakaoShare
                          title={`나의 테토-에겐 분석 결과: ${analysisResult.type} 💯`}
-                         description={`${analysisResult.summary}\n신뢰도: ${analysisResult.confidence}%\n\n나도 테스트 해보기! 👇`}
+                         description={`${analysisResult.summary}\n\n나도 테스트 해보기! 👇`}
                          imageUrl={analysisResult.type === '테토남' ? '/tetoman.png'
                            : analysisResult.type === '테토녀' ? '/tetowoman.png'
                            : analysisResult.type === '에겐남' ? '/egenman.png'

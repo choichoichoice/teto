@@ -86,7 +86,7 @@ export default function SharePage() {
   }
 
   const handleShare = async () => {
-    const shareText = `테토-에겐 분석 결과: ${analysisResult?.type} ${analysisResult?.emoji} (신뢰도 ${analysisResult?.confidence}%)`
+    const shareText = `테토-에겐 분석 결과: ${analysisResult?.type} ${analysisResult?.emoji}`
     
     if (navigator.share) {
       try {
@@ -187,9 +187,6 @@ export default function SharePage() {
                     </h2>
                     <p className="text-3xl text-gray-600 mb-4">
                       {analysisResult.summary}
-                    </p>
-                    <p className="text-2xl text-gray-500">
-                      신뢰도: {analysisResult.confidence}%
                     </p>
                   </div>
                 </div>
