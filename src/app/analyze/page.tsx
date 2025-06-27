@@ -13,6 +13,7 @@ import html2canvas from 'html2canvas'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/auth/AuthModal'
 import CoupangProductSelector from '@/components/CoupangProductSelector'
+import KakaoShare from '@/components/KakaoShare'
 
 export default function AnalyzePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -1252,13 +1253,20 @@ export default function AnalyzePage() {
 
                      {/* 친구에게 추천하기 및 기타 버튼들 */}
                      <div className="text-center space-y-3">
-                       <Button
-                         onClick={handleRecommendToFriend}
-                         className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 text-sm"
+                       <KakaoShare
+                         title={`나의 테토-에겐 분석 결과: ${analysisResult.type} 💯`}
+                         description={`${analysisResult.summary}\n신뢰도: ${analysisResult.confidence}%\n\n나도 테스트 해보기! 👇`}
+                         imageUrl={analysisResult.type === '테토남' ? '/tetoman.png'
+                           : analysisResult.type === '테토녀' ? '/tetowoman.png'
+                           : analysisResult.type === '에겐남' ? '/egenman.png'
+                           : '/egenwoman.png'}
+                         linkUrl={typeof window !== 'undefined' ? window.location.origin + '/analyze' : 'https://your-domain.com/analyze'}
+                         className="w-full"
                        >
-                         <Share2 className="mr-2 h-4 w-4" />
-                         친구에게 추천하기
-                       </Button>
+                         <span className="flex items-center justify-center">
+                           💬 카카오톡 공유하기
+                         </span>
+                       </KakaoShare>
                        
                        {/* 호르몬 강화하기 버튼 */}
                        <Button
