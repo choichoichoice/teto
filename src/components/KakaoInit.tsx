@@ -11,7 +11,7 @@ declare global {
 export default function KakaoInit() {
   useEffect(() => {
     // 사용자 제안 방식: 앱 시작시 딱 한 번만 초기화
-    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY;
     
     console.log('🔑 카카오 앱 키 확인:', !!kakaoKey);
     
@@ -29,7 +29,7 @@ export default function KakaoInit() {
           console.error('❌ 카카오 SDK 초기화 실패:', error);
         }
       } else if (!kakaoKey) {
-        console.error('❌ NEXT_PUBLIC_KAKAO_APP_KEY가 설정되지 않았습니다');
+        console.error('❌ NEXT_PUBLIC_KAKAO_API_KEY가 설정되지 않았습니다');
         console.log('💡 .env.local 파일을 확인해주세요');
       }
     };
