@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -22,6 +23,14 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3689089253422901"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
+        
         {/* 카카오 SDK 로드 */}
         <script 
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" 
