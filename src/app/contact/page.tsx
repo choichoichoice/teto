@@ -1,4 +1,4 @@
-import AdBanner from '@/components/AdBanner';
+
 
 export default function ContactPage() {
   return (
@@ -8,12 +8,7 @@ export default function ContactPage() {
         사용자가 서비스 이용 중 겪는 문제나 기타 문의사항을 전달할 수 있는 소통 창구입니다.
       </p>
       
-      {/* 광고 영역 1 */}
-      <div className="mb-10">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="contact-ad-1" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
       <div className="mb-10 p-6 bg-white rounded-xl border shadow-sm">
         <h2 className="text-2xl font-semibold mb-4">무엇을 도와드릴까요?</h2>
         <p className="mb-4 text-lg">
@@ -35,12 +30,7 @@ export default function ContactPage() {
         </div>
       </div>
       
-      {/* 광고 영역 2 */}
-      <div className="mt-10">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="contact-ad-2" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
     </div>
   );
 } 

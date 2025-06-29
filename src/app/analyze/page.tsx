@@ -7,7 +7,7 @@ import { Upload, Camera, Loader2, Share2, RefreshCw, TrendingUp, ImagePlus, Down
 import { AnalysisResult, DevelopmentTip } from '@/types'
 import Image from 'next/image'
 import ParticlesBg from "@/components/ParticlesBg"
-import AdBanner from "@/components/AdBanner"
+
 import html2canvas from 'html2canvas'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -908,6 +908,29 @@ export default function AnalyzePage() {
             사진을 업로드하여 AI가 분석하는 당신의 테토-에겐 유형을 무료로 확인해보세요.
           </p>
           
+          {/* 광고 영역 */}
+          <div className="mt-6 flex justify-center">
+            <ins 
+              className="kakao_ad_area" 
+              style={{ 
+                display: 'block',
+                width: '320px',
+                height: '100px',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                textAlign: 'center',
+                lineHeight: '100px',
+                color: '#666',
+                fontSize: '12px'
+              }}
+              data-ad-unit="DAN-7h0MOUYmuqhFnvVJ"
+              data-ad-width="320"
+              data-ad-height="100"
+            >
+              카카오 광고 영역 (DAN-7h0MOUYmuqhFnvVJ)
+            </ins>
+          </div>
+          
           {/* 개발 모드에서만 보안 상태 표시 */}
           {process.env.NODE_ENV === 'development' && user && (
             <div className="mt-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg text-xs mx-auto max-w-sm">
@@ -919,10 +942,7 @@ export default function AnalyzePage() {
         {/* 메인 콘텐츠 - 단일 컬럼 레이아웃 */}
         <div className="max-w-md mx-auto px-4">
 
-        {/* 광고 영역 1 */}
-        <div className="mb-6 flex justify-center">
-          <AdBanner key="analyze-ad-1" width="336" height="100" className="mx-auto" />
-        </div>
+
 
         {/* 이미지 업로드 섹션 */}
         <Card className="mb-8 p-3 bg-white/95 backdrop-blur-sm shadow-lg border-0">
@@ -1324,10 +1344,7 @@ export default function AnalyzePage() {
           )}
         </div>
 
-        {/* 광고 영역 2 */}
-        <div className="mb-6 flex justify-center">
-          <AdBanner key="analyze-ad-2" width="336" height="100" className="mx-auto" />
-        </div>
+
 
         </div>
       </div>

@@ -1,4 +1,4 @@
-import AdBanner from '@/components/AdBanner';
+
 
 export default function PrivacyPage() {
   return (
@@ -6,12 +6,7 @@ export default function PrivacyPage() {
       <h1 className="text-4xl font-bold mb-8">개인정보처리방침 및 이용약관</h1>
       <div className="mb-6 text-gray-600 text-lg">시행일자: 2024년 6월 16일</div>
       
-      {/* 광고 영역 1 */}
-      <div className="mb-8">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="privacy-ad-1" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
       
       <div className="bg-white rounded-xl border shadow-sm p-8 text-lg leading-relaxed">
         <p className="mb-6">
@@ -30,12 +25,7 @@ export default function PrivacyPage() {
           <li>음란물, 폭력적인 메시지 등 공서양속에 반하는 콘텐츠를 업로드하는 행위</li>
           <li>서비스의 정상적인 운영을 방해하는 행위</li>
         </ul>
-        {/* 광고 영역 2 */}
-        <div className="my-8 flex justify-center">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="privacy-ad-2" width="336" height="100" className="w-full" />
-          </div>
-        </div>
+
         
         <h2 className="text-2xl font-semibold mt-8 mb-4">제2부 개인정보처리방침</h2>
         <b>개발자는 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 개인정보보호법 등 관련 법령상의 개인정보보호 규정을 준수하며, 이용자 권익 보호에 최선을 다하고 있습니다.</b>
@@ -60,12 +50,7 @@ export default function PrivacyPage() {
         </ul>
       </div>
       
-      {/* 광고 영역 3 */}
-      <div className="mt-8">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="privacy-ad-3" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
     </div>
   );
 } 

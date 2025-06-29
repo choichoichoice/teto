@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Camera, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
 import ParticlesBg from "@/components/ParticlesBg";
 import AuthStatus from "@/components/AuthStatus";
-import AdBanner from "@/components/AdBanner";
+
 import KakaoShare from "@/components/KakaoShare";
 import { Suspense } from 'react';
 
@@ -58,23 +58,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 상단 광고 영역 - 히어로 바로 아래 */}
-      <section className="py-3 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="home-ad-top" width="336" height="50" className="w-full" />
-          </div>
-        </div>
-      </section>
 
-      {/* 광고 영역 1 */}
-      <section className="py-4 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="home-ad-1" width="336" height="100" className="w-full" />
-          </div>
-        </div>
-      </section>
 
       {/* 특징 섹션 */}
       <section className="py-6 bg-gray-50">
@@ -132,14 +116,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 영역 2 */}
-      <section className="py-4 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="home-ad-2" width="336" height="100" className="w-full" />
-          </div>
-        </div>
-      </section>
+
 
       {/* 성격 유형 소개 섹션 */}
       <section className="py-6">
@@ -217,14 +194,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 영역 3 */}
-      <section className="py-4 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="home-ad-3" width="336" height="100" className="w-full" />
-          </div>
-        </div>
-      </section>
+
 
       {/* CTA 섹션 */}
       <section className="py-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
@@ -249,14 +219,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 광고 영역 4 */}
-      <section className="py-4 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <AdBanner key="home-ad-4" width="336" height="100" className="w-full" />
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 }

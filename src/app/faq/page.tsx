@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react';
-import AdBanner from '@/components/AdBanner';
 
 const FAQ_LIST = [
   {
@@ -31,12 +30,7 @@ export default function FAQPage() {
         FAQ 페이지는 사용자의 궁금증을 미리 해결하여 고객 문의를 줄이고 서비스 만족도를 높이는 역할을 합니다.
       </p>
       
-      {/* 광고 영역 1 */}
-      <div className="mb-12">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="faq-ad-1" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
       <div className="divide-y-2 border-2 rounded-2xl bg-white">
         {FAQ_LIST.map((item, idx) => (
           <div key={idx}>
@@ -57,12 +51,7 @@ export default function FAQPage() {
         ))}
       </div>
       
-      {/* 광고 영역 2 */}
-      <div className="mt-12">
-        <div className="max-w-md mx-auto">
-          <AdBanner key="faq-ad-2" width="336" height="100" className="w-full" />
-        </div>
-      </div>
+
     </div>
   );
 } 
