@@ -916,15 +916,13 @@ export default function AnalyzePage() {
           )}
         </div>
 
-        {/* 광고 영역 1 */}
-        <div className="mb-6 flex justify-center px-4">
-          <div className="max-w-sm w-full mx-auto">
-            <AdBanner key="analyze-ad-1" className="w-full" />
-          </div>
-        </div>
-
         {/* 메인 콘텐츠 - 단일 컬럼 레이아웃 */}
-        <div className="max-w-sm mx-auto px-4">
+        <div className="max-w-md mx-auto px-4">
+
+        {/* 광고 영역 1 */}
+        <div className="mb-6 flex justify-center">
+          <AdBanner key="analyze-ad-1" width="336" height="100" className="mx-auto" />
+        </div>
 
         {/* 이미지 업로드 섹션 */}
         <Card className="mb-8 p-3 bg-white/95 backdrop-blur-sm shadow-lg border-0">
@@ -1327,10 +1325,8 @@ export default function AnalyzePage() {
         </div>
 
         {/* 광고 영역 2 */}
-        <div className="mb-6 flex justify-center px-4">
-          <div className="max-w-sm w-full mx-auto">
-            <AdBanner key="analyze-ad-2" className="w-full" />
-          </div>
+        <div className="mb-6 flex justify-center">
+          <AdBanner key="analyze-ad-2" width="336" height="100" className="mx-auto" />
         </div>
 
         </div>

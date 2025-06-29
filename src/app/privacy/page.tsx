@@ -8,7 +8,9 @@ export default function PrivacyPage() {
       
       {/* 광고 영역 1 */}
       <div className="mb-8">
-        <AdBanner key="privacy-ad-1" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="privacy-ad-1" width="336" height="100" className="w-full" />
+        </div>
       </div>
       
       <div className="bg-white rounded-xl border shadow-sm p-8 text-lg leading-relaxed">
@@ -30,7 +32,9 @@ export default function PrivacyPage() {
         </ul>
         {/* 광고 영역 2 */}
         <div className="my-8 flex justify-center">
-          <AdBanner key="privacy-ad-2" className="w-full max-w-2xl mx-auto" />
+          <div className="max-w-md mx-auto">
+            <AdBanner key="privacy-ad-2" width="336" height="100" className="w-full" />
+          </div>
         </div>
         
         <h2 className="text-2xl font-semibold mt-8 mb-4">제2부 개인정보처리방침</h2>
@@ -58,7 +62,9 @@ export default function PrivacyPage() {
       
       {/* 광고 영역 3 */}
       <div className="mt-8">
-        <AdBanner key="privacy-ad-3" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="privacy-ad-3" width="336" height="100" className="w-full" />
+        </div>
       </div>
     </div>
   );

@@ -29,6 +29,13 @@ export default function RootLayout({
           async
         />
         
+        {/* 카카오 AdFit 스크립트 */}
+        <script 
+          src="//t1.daumcdn.net/kas/static/ba.min.js" 
+          type="text/javascript"
+          async
+        />
+        
         <Providers>
           {/* 사용자 제안 방식: 앱 전체에서 딱 한 번만 초기화 */}
           <KakaoInit />

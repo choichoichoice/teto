@@ -50,7 +50,7 @@ export default function Home() {
                   title="🔮 테토-에겐 분석기 | AI 얼굴 분석"
                   description="나는 테토일까 에겐일까? AI가 사진으로 성격 유형을 분석해드려요! 무료 테스트 해보세요 ✨ #테토에겐 #성격분석"
                   imageUrl="/tetoman.png"
-                  url={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
+                  linkUrl={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
                 />
               </div>
             </div>
@@ -58,10 +58,21 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 상단 광고 영역 - 히어로 바로 아래 */}
+      <section className="py-3 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-md mx-auto">
+            <AdBanner key="home-ad-top" width="336" height="50" className="w-full" />
+          </div>
+        </div>
+      </section>
+
       {/* 광고 영역 1 */}
       <section className="py-4 bg-white">
         <div className="container mx-auto px-4">
-          <AdBanner key="home-ad-1" className="max-w-4xl mx-auto" />
+          <div className="max-w-md mx-auto">
+            <AdBanner key="home-ad-1" width="336" height="100" className="w-full" />
+          </div>
         </div>
       </section>
 
@@ -124,7 +135,9 @@ export default function Home() {
       {/* 광고 영역 2 */}
       <section className="py-4 bg-white">
         <div className="container mx-auto px-4">
-          <AdBanner key="home-ad-2" className="max-w-4xl mx-auto" />
+          <div className="max-w-md mx-auto">
+            <AdBanner key="home-ad-2" width="336" height="100" className="w-full" />
+          </div>
         </div>
       </section>
 
@@ -207,7 +220,9 @@ export default function Home() {
       {/* 광고 영역 3 */}
       <section className="py-4 bg-gray-50">
         <div className="container mx-auto px-4">
-          <AdBanner key="home-ad-3" className="max-w-4xl mx-auto" />
+          <div className="max-w-md mx-auto">
+            <AdBanner key="home-ad-3" width="336" height="100" className="w-full" />
+          </div>
         </div>
       </section>
 
@@ -237,7 +252,9 @@ export default function Home() {
       {/* 광고 영역 4 */}
       <section className="py-4 bg-white">
         <div className="container mx-auto px-4">
-          <AdBanner key="home-ad-4" className="max-w-4xl mx-auto" />
+          <div className="max-w-md mx-auto">
+            <AdBanner key="home-ad-4" width="336" height="100" className="w-full" />
+          </div>
         </div>
       </section>
     </div>

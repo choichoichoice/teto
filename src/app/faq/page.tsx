@@ -33,7 +33,9 @@ export default function FAQPage() {
       
       {/* 광고 영역 1 */}
       <div className="mb-12">
-        <AdBanner key="faq-ad-1" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="faq-ad-1" width="336" height="100" className="w-full" />
+        </div>
       </div>
       <div className="divide-y-2 border-2 rounded-2xl bg-white">
         {FAQ_LIST.map((item, idx) => (
@@ -57,7 +59,9 @@ export default function FAQPage() {
       
       {/* 광고 영역 2 */}
       <div className="mt-12">
-        <AdBanner key="faq-ad-2" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="faq-ad-2" width="336" height="100" className="w-full" />
+        </div>
       </div>
     </div>
   );

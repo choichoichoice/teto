@@ -10,7 +10,9 @@ export default function ContactPage() {
       
       {/* 광고 영역 1 */}
       <div className="mb-10">
-        <AdBanner key="contact-ad-1" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="contact-ad-1" width="336" height="100" className="w-full" />
+        </div>
       </div>
       <div className="mb-10 p-6 bg-white rounded-xl border shadow-sm">
         <h2 className="text-2xl font-semibold mb-4">무엇을 도와드릴까요?</h2>
@@ -35,7 +37,9 @@ export default function ContactPage() {
       
       {/* 광고 영역 2 */}
       <div className="mt-10">
-        <AdBanner key="contact-ad-2" className="w-full max-w-2xl mx-auto" />
+        <div className="max-w-md mx-auto">
+          <AdBanner key="contact-ad-2" width="336" height="100" className="w-full" />
+        </div>
       </div>
     </div>
   );

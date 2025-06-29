@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 interface AdBannerProps {
   className?: string
@@ -17,47 +17,123 @@ export default function AdBanner({
   width = "320",
   height = "100"
 }: AdBannerProps) {
-  const adRef = useRef<HTMLDivElement>(null)
-  const isInitialized = useRef(false)
+  const [isClient, setIsClient] = useState(false)
+  const [adLoaded, setAdLoaded] = useState(false)
+  const [adError, setAdError] = useState(false)
 
   useEffect(() => {
-    // 이미 초기화되었거나 adRef가 없으면 실행하지 않음
-    if (isInitialized.current || !adRef.current) return
-
-    try {
-      // 카카오 AdFit 스크립트가 이미 로드되었는지 확인
-      let script = document.querySelector('script[src*="ba.min.js"]') as HTMLScriptElement
-      
-      if (!script) {
-        // 스크립트가 없으면 동적으로 추가
-        script = document.createElement('script')
-        script.src = '//t1.daumcdn.net/kas/static/ba.min.js'
-        script.async = true
-        script.type = 'text/javascript'
-        document.head.appendChild(script)
-      }
-
-      isInitialized.current = true
-
-    } catch (error) {
-      console.error('카카오 AdFit 로딩 오류:', error)
-    }
-
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      isInitialized.current = false
-    }
+    setIsClient(true)
   }, [])
 
+  useEffect(() => {
+    if (!isClient) return
+
+    console.log('🎯 카카오 AdFit 광고 로드 시도:', { adUnit, width, height })
+
+    // 스크립트 로딩 확인 및 광고 활성화
+    const checkAndLoadAd = () => {
+      try {
+        // 카카오 AdFit 스크립트 확인
+        const script = document.querySelector('script[src*="ba.min.js"]')
+        
+        if (script) {
+          console.log('✅ 카카오 AdFit 스크립트 발견됨')
+          
+          // 광고 영역 활성화
+          const adElements = document.querySelectorAll(`[data-ad-unit="${adUnit}"]`)
+          adElements.forEach((element) => {
+            if (element instanceof HTMLElement) {
+              element.style.display = 'block'
+            }
+          })
+          
+          setAdLoaded(true)
+          console.log(`🎉 광고 활성화 완료: ${adUnit}`)
+        } else {
+          console.warn('⚠️ 카카오 AdFit 스크립트를 찾을 수 없습니다')
+          setAdError(true)
+        }
+      } catch (error) {
+        console.error('❌ 광고 로드 중 오류:', error)
+        setAdError(true)
+      }
+    }
+
+    // 약간의 지연 후 광고 로드 시도
+    const timer = setTimeout(checkAndLoadAd, 1000)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [isClient, adUnit, width, height])
+
+  // 클라이언트 렌더링이 완료되기 전에는 placeholder 표시
+  if (!isClient) {
+    return (
+      <div 
+        className={className} 
+        style={style}
+      >
+        <div
+          style={{ 
+            width: `${width}px`,
+            height: `${height}px`,
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#999',
+            fontSize: '12px'
+          }}
+        >
+          광고 준비 중...
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className={className} style={style} ref={adRef}>
+    <div className={className} style={style} suppressHydrationWarning>
       <ins 
         className="kakao_ad_area"
-        style={{ display: 'none' }}
+        style={{ 
+          display: adLoaded ? 'block' : 'none',
+          width: `${width}px`,
+          height: `${height}px`,
+          backgroundColor: adError ? '#fff3cd' : '#f8f9fa',
+          border: `1px solid ${adError ? '#ffeaa7' : '#e9ecef'}`,
+          textAlign: 'center',
+          lineHeight: `${height}px`,
+          color: adError ? '#856404' : '#999',
+          fontSize: '12px'
+        }}
         data-ad-unit={adUnit}
         data-ad-width={width}
         data-ad-height={height}
-      />
+      >
+        {adError ? '광고 로드 오류' : (adLoaded ? '' : '광고 로딩 중...')}
+      </ins>
+      
+      {/* 광고 로드 실패 시 대체 콘텐츠 */}
+      {adError && (
+        <div style={{ 
+          width: `${width}px`,
+          height: `${height}px`,
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #e9ecef',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+          fontSize: '11px',
+          textAlign: 'center',
+          padding: '10px'
+        }}>
+          광고 준비 중입니다<br/>
+          <small style={{ color: '#999' }}>곧 정상 서비스될 예정입니다</small>
+        </div>
+      )}
     </div>
   )
 } 
