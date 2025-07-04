@@ -4,58 +4,18 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <>
-                    {/* 풋터 상단 광고 배너 - CSS 무시 강제 표시 */}
-        <div style={{ 
-          width: '100vw',
-          backgroundColor: '#3b82f6',
-          padding: '20px',
-          display: 'block',
-          position: 'relative',
-          zIndex: 99999,
-          margin: '0',
-          boxSizing: 'border-box'
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            {/* 🔍 CSS 무시 모바일 강제 디버깅 */}
-            <div style={{ 
-              width: '100%',
-              backgroundColor: '#bbf7d0',
-              border: '4px solid #2563eb',
-              padding: '16px',
-              textAlign: 'center',
-              display: 'block',
-              minHeight: '100px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#1e40af',
-              boxSizing: 'border-box'
-            }}>
-              <div style={{ marginBottom: '10px' }}>🚨 푸터 광고 영역 🚨</div>
-              <ins 
-                className="kakao_ad_area" 
-                style={{ 
-                  display: "block", 
-                  minHeight: "50px", 
-                  width: "100%",
-                  maxWidth: "350px",
-                  margin: "10px auto",
-                  backgroundColor: "#ffffff",
-                  border: "2px dashed #999999"
-                }}
-                data-ad-unit="DAN-4I9yaFsLEaO37ij4"
-                data-ad-width="350"
-                data-ad-height="50"
-                data-ad-responsive="true"
-                data-ad-mobile="true"
-              ></ins>
-              <div style={{ marginTop: '10px', fontSize: '14px' }}>
-                이 파란 영역이 보이면 CSS 정상!
-              </div>
-            </div>
+                    {/* 풋터 상단 광고 배너 */}
+        <div className="w-full py-2">
+          <div className="w-full max-w-screen-sm mx-auto px-4">
+            <ins 
+              className="kakao_ad_area" 
+              style={{ display: "block" }}
+              data-ad-unit="DAN-4I9yaFsLEaO37ij4"
+              data-ad-width="350"
+              data-ad-height="50"
+              data-ad-responsive="true"
+              data-ad-mobile="true"
+            ></ins>
           </div>
         </div>
       
