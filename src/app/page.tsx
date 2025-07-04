@@ -18,15 +18,6 @@ export default function Home() {
       </Suspense>
 
       {/* 히어로 섹션 */}
-      <div className="flex w-full justify-center my-4">
-  <ins 
-    className="kakao_ad_area" 
-    style={{ display: "none" }}
-    data-ad-unit="DAN-eS5pNSPkANAP1JnD"
-    data-ad-width="320"
-    data-ad-height="50"
-  ></ins>
-</div>
       <section className="relative bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <ParticlesBg />
         <div className="absolute inset-0 bg-black/20"></div>
@@ -125,7 +116,18 @@ export default function Home() {
         </div>
       </section>
 
-
+      {/* 메인 콘텐츠 중간 광고 */}
+      <section className="py-4 bg-white">
+        <div className="flex w-full justify-center">
+          <ins 
+            className="kakao_ad_area" 
+            style={{ display: "none" }}
+            data-ad-unit="DAN-c0VhDZci21T1iic0"
+            data-ad-width="320"
+            data-ad-height="100"
+          ></ins>
+        </div>
+      </section>
 
       {/* 성격 유형 소개 섹션 */}
       <section className="py-6">
