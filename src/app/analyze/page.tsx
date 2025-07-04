@@ -40,8 +40,8 @@ export default function AnalyzePage() {
   
   const { user } = useAuth()
 
-  // 일일 분석 제한 설정
-  const DAILY_ANALYSIS_LIMIT = 2
+  // 일일 분석 제한 설정 - 개발용 임시 비활성화
+  const DAILY_ANALYSIS_LIMIT = 999 // 원래 2 -> 개발용 999
 
   // 사용자별 localStorage 키 생성 (보안 강화)
   const getUserStorageKey = (key: string, userId?: string) => {
