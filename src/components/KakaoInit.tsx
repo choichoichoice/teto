@@ -10,7 +10,9 @@ declare global {
 
 export default function KakaoInit() {
   useEffect(() => {
-    // 사용자 제안 방식: 앱 시작시 딱 한 번만 초기화
+    // 클라이언트 사이드에서만 실행
+    if (typeof window === 'undefined') return;
+
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY;
     
     console.log('🔑 카카오 앱 키 확인:', !!kakaoKey);
@@ -34,25 +36,44 @@ export default function KakaoInit() {
       }
     };
 
+    let checkKakaoInterval: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
     // SDK 로드 완료까지 대기
     if (window.Kakao) {
       initKakao();
     } else {
       console.log('⏳ 카카오 SDK 로드 대기 중...');
       
-      const checkKakao = setInterval(() => {
+      checkKakaoInterval = setInterval(() => {
         if (window.Kakao) {
           initKakao();
-          clearInterval(checkKakao);
+          if (checkKakaoInterval) {
+            clearInterval(checkKakaoInterval);
+            checkKakaoInterval = null;
+          }
         }
       }, 100);
       
       // 10초 후 타임아웃
-      setTimeout(() => {
-        clearInterval(checkKakao);
+      timeoutId = setTimeout(() => {
+        if (checkKakaoInterval) {
+          clearInterval(checkKakaoInterval);
+          checkKakaoInterval = null;
+        }
         console.warn('⚠️ 카카오 SDK 로드 타임아웃');
       }, 10000);
     }
+
+    // cleanup 함수: 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (checkKakaoInterval) {
+        clearInterval(checkKakaoInterval);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []); // 빈 배열로 앱 시작시 한 번만 실행
 
   return null;

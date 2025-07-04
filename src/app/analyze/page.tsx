@@ -908,28 +908,7 @@ export default function AnalyzePage() {
             사진을 업로드하여 AI가 분석하는 당신의 테토-에겐 유형을 무료로 확인해보세요.
           </p>
           
-          {/* 광고 영역 */}
-          <div className="mt-6 flex justify-center">
-            <ins 
-              className="kakao_ad_area" 
-              style={{ 
-                display: 'block',
-                width: '320px',
-                height: '100px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                textAlign: 'center',
-                lineHeight: '100px',
-                color: '#666',
-                fontSize: '12px'
-              }}
-              data-ad-unit="DAN-7h0MOUYmuqhFnvVJ"
-              data-ad-width="320"
-              data-ad-height="100"
-            >
-              카카오 광고 영역 (DAN-7h0MOUYmuqhFnvVJ)
-            </ins>
-          </div>
+
           
           {/* 개발 모드에서만 보안 상태 표시 */}
           {process.env.NODE_ENV === 'development' && user && (
