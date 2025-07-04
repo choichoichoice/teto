@@ -35,14 +35,12 @@ export default function AnalyzePage() {
   const [isSavingImage, setIsSavingImage] = useState(false)
   const analysisResultRef = useRef<HTMLDivElement>(null)
   
-  // 카운트다운 관련 상태
-  const [countdown, setCountdown] = useState(0)
-  const [isCountingDown, setIsCountingDown] = useState(false)
+  // 카운트다운 관련 상태 제거됨
   
   const { user } = useAuth()
 
-  // 일일 분석 제한 설정 - 개발용 임시 비활성화
-  const DAILY_ANALYSIS_LIMIT = 999 // 원래 2 -> 개발용 999
+  // 일일 분석 제한 설정
+  const DAILY_ANALYSIS_LIMIT = 2 // 하루 2회 제한
 
   // 사용자별 localStorage 키 생성 (보안 강화)
   const getUserStorageKey = (key: string, userId?: string) => {
@@ -295,29 +293,7 @@ export default function AnalyzePage() {
     }
   }
 
-  // 카운트다운 시작 (API 호출 시간에 맞춰 45초로 증가)
-  const startCountdown = () => {
-    setCountdown(45) // 10초 → 45초로 증가
-    setIsCountingDown(true)
-    
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          // 카운트다운이 끝났지만 아직 로딩 중이면 다시 시작
-          if (isAnalyzing) {
-            return 45 // 다시 45초부터 시작
-          } else {
-            setIsCountingDown(false)
-            clearInterval(countdownInterval)
-            return 0
-          }
-        }
-        return prev - 1
-      })
-    }, 1000)
-    
-    return countdownInterval
-  }
+  // 카운트다운 함수 제거됨
 
   const handleAnalyze = async () => {
     if (!selectedImage) return
@@ -337,8 +313,6 @@ export default function AnalyzePage() {
 
     setIsAnalyzing(true)
     
-    // 카운트다운 시작
-    const countdownInterval = startCountdown()
     try {
       const formData = new FormData()
       formData.append('image', selectedImage)
@@ -438,11 +412,6 @@ export default function AnalyzePage() {
       alert('🤖 분석 중 오류가 발생했습니다.\n\n• 이미지를 다시 선택해주세요\n• 네트워크 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요')
     } finally {
       setIsAnalyzing(false)
-      setIsCountingDown(false)
-      setCountdown(0)
-      if (countdownInterval) {
-        clearInterval(countdownInterval)
-      }
     }
   }
 
@@ -894,16 +863,7 @@ export default function AnalyzePage() {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 animate-spin" />
-                        {isCountingDown ? (
-                          <span className="flex items-center">
-                            AI가 열심히 분석 중... 
-                            <span className="ml-2 text-lg font-bold text-yellow-600 animate-pulse">
-                              {countdown}
-                            </span>
-                          </span>
-                        ) : (
-                          'AI가 열심히 분석 중...'
-                        )}
+                        AI가 열심히 분석 중...
                       </>
                     ) : isAnalysisLimitReached ? (
                       <>
