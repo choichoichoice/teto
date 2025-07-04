@@ -1299,7 +1299,7 @@ export default function AnalyzePage() {
                            : analysisResult.type === '테토녀' ? '/tetowoman.png'
                            : analysisResult.type === '에겐남' ? '/egenman.png'
                            : '/egenwoman.png'}
-                         linkUrl={typeof window !== 'undefined' ? window.location.origin + '/analyze' : 'https://your-domain.com/analyze'}
+                         linkUrl="https://teto-choichoichoices-projects.vercel.app/analyze"
                          className="w-full"
                        >
                          <span className="flex items-center justify-center">

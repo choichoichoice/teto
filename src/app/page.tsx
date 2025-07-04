@@ -50,7 +50,7 @@ export default function Home() {
                   title="🔮 테토-에겐 분석기 | AI 얼굴 분석"
                   description="나는 테토일까 에겐일까? AI가 사진으로 성격 유형을 분석해드려요! 무료 테스트 해보세요 ✨ #테토에겐 #성격분석"
                   imageUrl="/tetoman.png"
-                  linkUrl={typeof window !== 'undefined' ? window.location.origin : 'https://teto.com'}
+                  linkUrl="https://teto-choichoichoices-projects.vercel.app/"
                 />
               </div>
             </div>
