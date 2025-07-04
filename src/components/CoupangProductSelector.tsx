@@ -53,6 +53,17 @@ export default function CoupangProductSelector({
           </p>
         </DialogHeader>
 
+        {/* 카카오 AdFit 광고 */}
+        <div className="flex w-full justify-center py-4 bg-gray-50 rounded-lg" suppressHydrationWarning>
+          <ins 
+            className="kakao_ad_area" 
+            style={{ display: "none" }}
+            data-ad-unit="DAN-vrIRNccY2pFwiBvC"
+            data-ad-width="250"
+            data-ad-height="250"
+          ></ins>
+        </div>
+
         {/* 캐릭터별 쿠팡 파트너스 HTML 렌더링 */}
         <div 
           className="coupang-products-container"
