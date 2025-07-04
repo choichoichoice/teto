@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AnalysisResult } from '@/types'
 import OpenAI from 'openai'
 
-// OpenAI 클라이언트 초기화를 함수 내부로 이동 (모바일 최적화 포함)
+// OpenAI 클라이언트 초기화
 function getOpenAIClient() {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY 환경변수가 설정되지 않았습니다.')
   }
   return new OpenAI({ 
-    apiKey,
-    timeout: 30000, // 30초 타임아웃 (모바일 네트워크 고려)
-    maxRetries: 2,  // 재시도 횟수 (모바일 연결 불안정 대비)
+    apiKey
   })
 }
 
@@ -30,28 +28,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 모바일 최적화: 이미지 크기 제한 체크
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (image.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: '이미지 파일 크기가 너무 큽니다. 10MB 이하의 이미지를 업로드해주세요.' },
-        { status: 400 }
-      )
-    }
-
-    // 지원되는 이미지 포맷 체크
-    const supportedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!supportedFormats.includes(image.type)) {
-      return NextResponse.json(
-        { error: '지원되지 않는 이미지 포맷입니다. JPEG, PNG, WebP, GIF 파일만 업로드 가능합니다.' },
-        { status: 400 }
-      )
-    }
+    // 기본 이미지 유효성 체크만 유지
 
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const base64Image = buffer.toString('base64')
-    // 모바일 최적화: 타임아웃 설정으로 안정성 향상
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -182,40 +164,14 @@ JSON 형식으로 응답해주세요:
     // 환경변수 오류인 경우 특별한 메시지 반환
     if (error instanceof Error && error.message.includes('OPENAI_API_KEY')) {
       return NextResponse.json(
-        { error: 'OpenAI API 키가 설정되지 않았습니다. .env.local 파일에 OPENAI_API_KEY를 추가해주세요.' },
+        { error: 'OpenAI API 키가 설정되지 않았습니다. .env.local 파일에 OPENAI_API_KEY를 올바르게 추가해주세요.' },
         { status: 500 }
       )
     }
     
-    // 모바일 친화적 에러 처리
-    if (error instanceof Error) {
-      // 네트워크 타임아웃 에러
-      if (error.message.includes('timeout') || error.message.includes('ECONNABORTED')) {
-        return NextResponse.json(
-          { error: '네트워크 연결이 불안정합니다. 잠시 후 다시 시도해주세요.' },
-          { status: 408 }
-        )
-      }
-      
-      // 네트워크 연결 에러
-      if (error.message.includes('network') || error.message.includes('ENOTFOUND')) {
-        return NextResponse.json(
-          { error: '인터넷 연결을 확인하고 다시 시도해주세요.' },
-          { status: 503 }
-        )
-      }
-      
-      // 이미지 처리 에러
-      if (error.message.includes('image') || error.message.includes('invalid')) {
-        return NextResponse.json(
-          { error: '이미지 처리 중 오류가 발생했습니다. 다른 이미지를 시도해주세요.' },
-          { status: 400 }
-        )
-      }
-    }
-    
+    // 간단한 에러 처리
     return NextResponse.json(
-      { error: '이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+      { error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
       { status: 500 }
     )
   }
