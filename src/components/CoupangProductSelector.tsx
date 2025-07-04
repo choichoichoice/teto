@@ -53,27 +53,7 @@ export default function CoupangProductSelector({
           </p>
         </DialogHeader>
 
-        {/* 카카오 AdFit 광고 */}
-        <div className="flex w-full justify-center py-4 bg-gray-50 rounded-lg" suppressHydrationWarning>
-          {/* 🔍 디버깅용: 광고 영역을 눈에 보이게 만들기 */}
-          <div className="relative min-h-[260px] min-w-[250px] bg-purple-100 border-2 border-orange-500 flex items-center justify-center">
-            <ins 
-              className="kakao_ad_area" 
-              style={{ display: "block", minHeight: "250px", minWidth: "250px" }}
-              data-ad-unit="DAN-vrIRNccY2pFwiBvC"
-              data-ad-width="250"
-              data-ad-height="250"
-              data-ad-responsive="true"
-              data-ad-mobile="true"
-            ></ins>
-            {/* 디버깅용 텍스트 */}
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-orange-600 pointer-events-none z-10">
-              <div className="bg-white/80 px-2 py-1 rounded">
-                AdFit 영역 (250x250)
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* 캐릭터별 쿠팡 파트너스 HTML 렌더링 */}
         <div 
