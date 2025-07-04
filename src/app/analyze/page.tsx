@@ -254,15 +254,18 @@ export default function AnalyzePage() {
         return
       }
       
-      // 파일 크기 체크 (10MB)
+      // 모바일 최적화: 파일 크기 체크 (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('파일 크기는 10MB 이하여야 합니다.')
+        alert(`📏 이미지 파일이 너무 큽니다!\n\n• 현재 크기: ${(file.size / 1024 / 1024).toFixed(1)}MB\n• 최대 크기: 10MB\n• 이미지 크기를 줄여서 다시 시도해주세요`)
+        event.target.value = ''
         return
       }
       
-      // 파일 타입 체크
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.')
+      // 모바일 최적화: 지원되는 이미지 포맷 체크
+      const supportedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!supportedFormats.includes(file.type)) {
+        alert(`🚨 지원되지 않는 이미지 포맷입니다!\n\n• 지원 포맷: JPEG, PNG, WebP, GIF\n• 현재 포맷: ${file.type || '알 수 없음'}\n• 다른 이미지를 선택해주세요`)
+        event.target.value = ''
         return
       }
       setSelectedImage(file)
@@ -277,7 +280,7 @@ export default function AnalyzePage() {
       
       reader.onerror = (error) => {
         console.error('파일 읽기 오류:', error)
-        alert('파일을 읽는 중 오류가 발생했습니다.')
+        alert('📱 파일을 읽는 중 오류가 발생했습니다.\n\n• 이미지가 손상되었을 수 있습니다\n• 다른 이미지를 선택해주세요\n• 기기 저장 공간을 확인해주세요')
       }
       
       reader.readAsDataURL(file)
@@ -288,7 +291,7 @@ export default function AnalyzePage() {
       event.target.value = ''
     } catch (error) {
       console.error('파일 선택 중 심각한 오류:', error)
-      alert('파일 선택 중 오류가 발생했습니다.')
+      alert('📱 파일 선택 중 오류가 발생했습니다.\n\n• 앱을 다시 시작해보세요\n• 기기 저장 공간을 확인해주세요\n• 다른 이미지를 선택해주세요')
     }
   }
 
@@ -345,11 +348,37 @@ export default function AnalyzePage() {
         body: formData,
       })
 
+      // 모바일 친화적 HTTP 상태 코드 처리
       if (!response.ok) {
-        throw new Error('분석에 실패했습니다.')
+        const errorData = await response.json().catch(() => ({}))
+        
+        switch (response.status) {
+          case 400:
+            alert(`🚨 ${errorData.error || '잘못된 요청입니다.'}\n\n• 이미지 파일을 다시 확인해주세요\n• 10MB 이하의 JPEG, PNG 파일을 업로드해주세요`)
+            return
+          case 408:
+            alert(`⏱️ ${errorData.error || '요청 시간이 초과되었습니다.'}\n\n• 네트워크 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요`)
+            return
+          case 413:
+            alert(`📏 이미지 파일이 너무 큽니다!\n\n• 10MB 이하의 이미지를 업로드해주세요\n• 이미지 크기를 줄여서 다시 시도해주세요`)
+            return
+          case 503:
+            alert(`🌐 서비스 연결에 문제가 있습니다.\n\n• 인터넷 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요`)
+            return
+          default:
+            alert(`❌ ${errorData.error || '분석에 실패했습니다.'}\n\n• 잠시 후 다시 시도해주세요`)
+            return
+        }
       }
 
       const result = await response.json()
+      
+      // 부적절한 이미지 에러 처리
+      if (result.type === 'error' && result.error) {
+        alert(`🚨 ${result.error}`)
+        return
+      }
+      
       setAnalysisResult(result)
 
       // 분석 성공 시 횟수 증가 💰
@@ -384,7 +413,23 @@ export default function AnalyzePage() {
 
     } catch (error) {
       console.error('분석 중 상세 에러:', error)
-      alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.')
+      
+      // 모바일 친화적 에러 처리
+      if (error instanceof Error) {
+        // 네트워크 에러 감지
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          alert('📱 네트워크 연결이 불안정합니다.\n\n• WiFi 또는 데이터 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요')
+          return
+        }
+        
+        // 타임아웃 에러 감지
+        if (error.message.includes('timeout') || error.message.includes('TimeoutError')) {
+          alert('⏱️ 네트워크 응답이 지연되고 있습니다.\n\n• 네트워크 상태를 확인해주세요\n• 잠시 후 다시 시도해주세요')
+          return
+        }
+      }
+      
+      alert('🤖 분석 중 오류가 발생했습니다.\n\n• 이미지를 다시 선택해주세요\n• 네트워크 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요')
     } finally {
       setIsAnalyzing(false)
       setIsCountingDown(false)
