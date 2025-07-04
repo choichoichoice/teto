@@ -18,6 +18,15 @@ export default function Home() {
       </Suspense>
 
       {/* 히어로 섹션 */}
+      <div className="flex w-full justify-center my-4">
+  <ins 
+    className="kakao_ad_area" 
+    style={{ display: "none" }}
+    data-ad-unit="DAN-eS5pNSPkANAP1JnD"
+    data-ad-width="320"
+    data-ad-height="50"
+  ></ins>
+</div>
       <section className="relative bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <ParticlesBg />
         <div className="absolute inset-0 bg-black/20"></div>
