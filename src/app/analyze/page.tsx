@@ -295,9 +295,9 @@ export default function AnalyzePage() {
     }
   }
 
-  // 카운트다운 시작
+  // 카운트다운 시작 (API 호출 시간에 맞춰 45초로 증가)
   const startCountdown = () => {
-    setCountdown(10)
+    setCountdown(45) // 10초 → 45초로 증가
     setIsCountingDown(true)
     
     const countdownInterval = setInterval(() => {
@@ -305,7 +305,7 @@ export default function AnalyzePage() {
         if (prev <= 1) {
           // 카운트다운이 끝났지만 아직 로딩 중이면 다시 시작
           if (isAnalyzing) {
-            return 10 // 다시 10초부터 시작
+            return 45 // 다시 45초부터 시작
           } else {
             setIsCountingDown(false)
             clearInterval(countdownInterval)
@@ -343,10 +343,17 @@ export default function AnalyzePage() {
       const formData = new FormData()
       formData.append('image', selectedImage)
 
+      // API 호출에 타임아웃 추가 (45초)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000) // 45초 타임아웃
+      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       })
+      
+      clearTimeout(timeoutId)
 
       // 모바일 친화적 HTTP 상태 코드 처리
       if (!response.ok) {
@@ -409,6 +416,12 @@ export default function AnalyzePage() {
       
       // 모바일 친화적 에러 처리
       if (error instanceof Error) {
+        // AbortController 타임아웃 에러 감지
+        if (error.name === 'AbortError') {
+          alert('⏱️ 분석 시간이 너무 오래 걸리고 있습니다.\n\n• 네트워크 연결이 느릴 수 있습니다\n• 더 작은 이미지로 다시 시도해보세요\n• 잠시 후 다시 시도해주세요')
+          return
+        }
+        
         // 네트워크 에러 감지
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
           alert('📱 네트워크 연결이 불안정합니다.\n\n• WiFi 또는 데이터 연결을 확인해주세요\n• 잠시 후 다시 시도해주세요')
