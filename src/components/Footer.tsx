@@ -13,6 +13,8 @@ export default function Footer() {
             data-ad-unit="DAN-4I9yaFsLEaO37ij4"
             data-ad-width="320"
             data-ad-height="50"
+            data-ad-responsive="true"
+            data-ad-mobile="true"
           ></ins>
         </div>
       </div>

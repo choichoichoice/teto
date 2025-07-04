@@ -163,6 +163,8 @@ export default function Header() {
             data-ad-unit="DAN-eS5pNSPkANAP1JnD"
             data-ad-width="320"
             data-ad-height="50"
+            data-ad-responsive="true"
+            data-ad-mobile="true"
           ></ins>
         </div>
       </div>

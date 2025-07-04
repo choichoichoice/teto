@@ -61,6 +61,8 @@ export default function CoupangProductSelector({
             data-ad-unit="DAN-vrIRNccY2pFwiBvC"
             data-ad-width="250"
             data-ad-height="250"
+            data-ad-responsive="true"
+            data-ad-mobile="true"
           ></ins>
         </div>
 

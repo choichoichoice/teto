@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/auth/AuthModal'
 import CoupangProductSelector from '@/components/CoupangProductSelector'
 import KakaoShare from '@/components/KakaoShare'
+import AdFitDebugger from '@/components/AdFitDebugger'
 
 export default function AnalyzePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -1352,6 +1353,9 @@ export default function AnalyzePage() {
           userType={analysisResult.type}
         />
       )}
+      
+      {/* AdFit 디버깅 컴포넌트 (개발 환경에서만 표시) */}
+      <AdFitDebugger adUnit="DAN-eS5pNSPkANAP1JnD" width="320" height="50" />
     </div>
   )
 } 
