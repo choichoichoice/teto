@@ -372,13 +372,6 @@ export default function AnalyzePage() {
       }
 
       const result = await response.json()
-      
-      // 부적절한 이미지 에러 처리
-      if (result.type === 'error' && result.error) {
-        alert(`🚨 ${result.error}`)
-        return
-      }
-      
       setAnalysisResult(result)
 
       // 분석 성공 시 횟수 증가 💰
