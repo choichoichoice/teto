@@ -4,18 +4,41 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <>
-      {/* 풋터 상단 광고 배너 */}
-      <div className="bg-gray-50 border-t border-gray-200">
-        <div className="flex w-full justify-center py-2" suppressHydrationWarning>
-          <ins 
-            className="kakao_ad_area" 
-            style={{ display: "none" }}
-            data-ad-unit="DAN-4I9yaFsLEaO37ij4"
-            data-ad-width="320"
-            data-ad-height="50"
-            data-ad-responsive="true"
-            data-ad-mobile="true"
-          ></ins>
+             {/* 풋터 상단 광고 배너 - 모바일 강제 표시 */}
+       <div className="w-full bg-blue-500 p-4 block" style={{ 
+         position: 'relative',
+         zIndex: 9999
+       }}>
+         <div className="w-full max-w-screen-sm mx-auto">
+           {/* 🔍 모바일 강제 디버깅: 무조건 보이게 만들기 */}
+           <div 
+             className="w-full bg-green-300 border-4 border-blue-600 p-4 text-center block"
+             style={{ 
+               minHeight: '80px',
+               fontSize: '16px',
+               fontWeight: 'bold'
+             }}
+           >
+            <div className="text-blue-800 mb-2">🚨 푸터 광고 영역 🚨</div>
+            <ins 
+              className="kakao_ad_area" 
+              style={{ 
+                display: "block !important", 
+                minHeight: "50px", 
+                width: "100%",
+                maxWidth: "350px",
+                margin: "0 auto"
+              }}
+              data-ad-unit="DAN-4I9yaFsLEaO37ij4"
+              data-ad-width="350"
+              data-ad-height="50"
+              data-ad-responsive="true"
+              data-ad-mobile="true"
+            ></ins>
+            <div className="text-blue-800 mt-2 text-sm">
+              이 영역이 보이면 광고 영역 정상 / 안 보이면 CSS 문제
+            </div>
+          </div>
         </div>
       </div>
       

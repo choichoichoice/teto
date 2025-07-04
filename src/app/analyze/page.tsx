@@ -561,87 +561,36 @@ export default function AnalyzePage() {
   }
 
   // 분석결과를 이미지로 저장하기 - 모바일/데스크톱 별 다른 방식
-  // 📱 모바일 최적화 저장 시스템
+  // 🚀 고속 모바일 최적화 저장 시스템
   const handleSaveResult = async () => {
     if (!analysisResult || !analysisResultRef.current) return
     
     setIsSavingImage(true)
     
     try {
-      console.log('📱 모바일 최적화 이미지 생성 시작...')
+      console.log('🚀 고속 이미지 생성 시작...')
       
-      // 📱 이미지 로딩 완료 대기 (깨짐 방지)
-      const images = analysisResultRef.current.querySelectorAll('img')
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve()
-        return new Promise((resolve) => {
-          img.onload = () => resolve(true)
-          img.onerror = () => resolve(true) // 에러여도 계속 진행
-        })
-      }))
-      
-      // 📱 모바일 화면에 맞는 최적화된 이미지 생성
+      // 🚀 모바일 고속 모드: 간단한 옵션으로 빠른 렌더링
       const isMobileDevice = isMobile()
       const canvas = await html2canvas(analysisResultRef.current, {
         backgroundColor: '#ffffff',
-        scale: isMobileDevice ? 1.5 : 2,
+        scale: isMobileDevice ? 1 : 1.5, // 모바일 해상도 낮춤 (속도 UP)
         useCORS: true,
         allowTaint: true,
-        foreignObjectRendering: false, // SVG 렌더링 문제 방지
-        imageTimeout: 10000, // 이미지 로딩 타임아웃 증가
-        scrollX: 0,
-        scrollY: 0,
-        width: analysisResultRef.current.scrollWidth,
-        height: analysisResultRef.current.scrollHeight,
+        foreignObjectRendering: false,
+        imageTimeout: 3000, // 3초로 단축 (10초 → 3초)
+        logging: false, // 로그 비활성화로 속도 향상
+        removeContainer: true, // 컨테이너 제거로 속도 향상
         onclone: (clonedDoc) => {
+          // 🚀 최소한의 처리로 속도 극대화
           const clonedElement = clonedDoc.querySelector('[data-analysis-result]') as HTMLElement
           if (clonedElement) {
-            clonedElement.style.padding = '20px'
-            clonedElement.style.margin = '0'
-            clonedElement.style.maxWidth = 'none'
-            clonedElement.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
-            clonedElement.style.borderRadius = '12px'
-            clonedElement.style.border = '1px solid #e5e7eb'
+            // 간단한 스타일만 적용
+            clonedElement.style.padding = '15px'
+            clonedElement.style.backgroundColor = '#ffffff'
+            clonedElement.style.borderRadius = '8px'
             
-            // 🔧 이미지 깨짐 완벽 방지 처리
-            const images = clonedElement.querySelectorAll('img')
-            images.forEach((img, index) => {
-              // Next.js 최적화 속성 모두 제거
-              img.removeAttribute('srcset')
-              img.removeAttribute('sizes')
-              img.removeAttribute('loading')
-              img.removeAttribute('decoding')
-              img.removeAttribute('fetchpriority')
-              
-              // 원본 이미지 경로로 변경
-              const src = img.getAttribute('src')
-              if (src && src.includes('/_next/image')) {
-                // Next.js 최적화된 이미지를 원본 경로로 변경
-                const urlParams = new URLSearchParams(src.split('?')[1])
-                const originalUrl = urlParams.get('url')
-                if (originalUrl) {
-                  img.src = originalUrl
-                }
-              }
-              
-              // 강제 스타일 적용
-              img.style.imageRendering = 'crisp-edges'
-              img.style.objectFit = 'contain'
-              img.style.maxWidth = '100%'
-              img.style.maxHeight = '100%'
-              img.style.width = 'auto'
-              img.style.height = 'auto'
-              img.style.display = 'block'
-              img.style.margin = '0 auto'
-              
-              // 크기 고정 (캐릭터 이미지들)
-              if (img.alt && (img.alt.includes('테토') || img.alt.includes('에겐'))) {
-                img.style.width = '80px'
-                img.style.height = '80px'
-              }
-            })
-            
-            // 불필요한 영역 제거
+            // 불필요한 영역만 제거
             const excludedContent = clonedElement.querySelector('.save-excluded-content')
             if (excludedContent) {
               excludedContent.remove()
@@ -650,227 +599,62 @@ export default function AnalyzePage() {
         }
       })
       
-      // 📱 거의 안 보이는 워터마크 추가
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.font = '12px sans-serif'
-        ctx.textAlign = 'right'
-        const watermarkText = 'teto-egen.com'
-        const textX = canvas.width - 15
-        const textY = canvas.height - 10
-        
-        // 거의 투명한 워터마크
-        ctx.fillStyle = 'rgba(150, 150, 150, 0.3)'
-        ctx.fillText(watermarkText, textX, textY)
-      }
+      // 🚀 고속 이미지 변환 (품질 최적화)
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob!)
+        }, 'image/jpeg', 0.8) // PNG → JPEG, 품질 0.8로 파일 크기 축소
+      })
       
-              // 📱 최적화된 이미지 변환
-        const blob = await new Promise<Blob>((resolve) => {
-          canvas.toBlob((blob) => {
-            resolve(blob!)
-          }, 'image/png', 0.9)
-        })
+      const fileName = `테토에겐_${analysisResult.type}_${Date.now()}.jpg`
+      
+      // 🚀 초고속 저장 시스템
+      if (isMobile()) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
         
-        const fileName = `테토에겐_${analysisResult.type}_${new Date().toISOString().split('T')[0]}.png`
-        
-        // 📱 스마트 저장 시스템
-       if (isMobile()) {
-         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-         const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
-         
-         console.log(`🍎 디바이스 감지: iOS=${isIOS}, Safari=${isSafari}`)
-         
-         // 🍎 방법 1: iOS Web Share API (iOS 12.2+)
-         if (isIOS && navigator.share) {
-           try {
-             const file = new File([blob], fileName, { type: 'image/png' })
-             
-             // iOS에서 파일 공유 지원 여부 확인
-             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-               await navigator.share({
-                 title: '🍎 테토-에겐 AI 분석 결과',
-                 text: `나는 ${analysisResult.type}! 테토-에겐 성격 분석 결과를 확인해보세요!`,
-                 files: [file]
-               })
-               console.log('✅ iOS Web Share API로 저장 완료')
-               alert('🍎 iOS 네이티브 공유가 완료되었습니다!\n\n"사진에 저장"을 선택하면 포토 앱에 저장됩니다! 📱')
-               return
-             } else {
-               // 파일 없이 URL 공유 (iOS 구버전 호환)
-               await navigator.share({
-                 title: '🍎 테토-에겐 AI 분석 결과',
-                 text: `나는 ${analysisResult.type}! 테토-에겐 성격 분석 결과를 확인해보세요!`,
-                 url: window.location.href
-               })
-               console.log('✅ iOS Web Share API (URL) 완료')
-             }
-           } catch (shareError) {
-             console.log('🍎 Web Share API 실패, 클립보드 방법 시도:', shareError)
-           }
-         }
-         
-         // 🍎 방법 2: iOS 클립보드 API (iOS 13.4+)
-         if (isIOS && navigator.clipboard && navigator.clipboard.write) {
-           try {
-             await navigator.clipboard.write([
-               new ClipboardItem({
-                 'image/png': blob
-               })
-             ])
-             console.log('✅ iOS 클립보드에 이미지 복사 완료')
-             alert('🍎 이미지가 클립보드에 복사되었습니다!\n\n포토 앱을 열고 "+" 버튼 → "붙여넣기"로 저장하세요! 📸')
-             return
-           } catch (clipboardError) {
-             console.log('🍎 클립보드 API 실패, 다운로드 방법 시도:', clipboardError)
-           }
-         }
-         
-         // 🍎 방법 3: iOS Safari 호환 다운로드 (모든 iOS 버전)
-         const url = URL.createObjectURL(blob)
-         
-         if (isIOS) {
-           // iOS Safari에서 이미지 새 창 열기
-           const newWindow = window.open('', '_blank')
-           if (newWindow) {
-             newWindow.document.write(`
-               <!DOCTYPE html>
-               <html>
-               <head>
-                 <meta charset="UTF-8">
-                 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-                 <title>🍎 테토-에겐 분석결과</title>
-                 <style>
-                   body {
-                     margin: 0;
-                     padding: 15px;
-                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                     text-align: center;
-                     min-height: 100vh;
-                   }
-                   .container {
-                     max-width: 100%;
-                     margin: 0 auto;
-                   }
-                   img {
-                     max-width: 100%;
-                     height: auto;
-                     border-radius: 16px;
-                     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-                     margin-bottom: 20px;
-                     border: 2px solid rgba(255,255,255,0.2);
-                   }
-                   .instruction {
-                     background: rgba(255,255,255,0.95);
-                     backdrop-filter: blur(10px);
-                     padding: 20px;
-                     border-radius: 16px;
-                     margin: 20px 0;
-                     color: #1d1d1f;
-                     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-                   }
-                   .instruction h3 {
-                     margin: 0 0 15px 0;
-                     font-size: 18px;
-                     font-weight: 700;
-                     color: #007AFF;
-                   }
-                   .instruction p {
-                     margin: 8px 0;
-                     font-size: 16px;
-                     line-height: 1.5;
-                   }
-                   .step {
-                     background: #007AFF;
-                     color: white;
-                     border-radius: 12px;
-                     padding: 15px;
-                     margin: 10px 0;
-                     font-weight: 600;
-                   }
-                   .apple-logo {
-                     font-size: 24px;
-                     margin-bottom: 10px;
-                   }
-                 </style>
-               </head>
-               <body>
-                 <div class="container">
-                   <div class="apple-logo">🍎</div>
-                   <img src="${url}" alt="테토-에겐 분석결과" id="resultImage" />
-                   <div class="instruction">
-                     <h3>📱 iPhone 포토 앱에 저장하기</h3>
-                     <div class="step">
-                       <strong>1단계:</strong> 위 이미지를 길게 눌러주세요 (Long Press)
-                     </div>
-                     <div class="step">
-                       <strong>2단계:</strong> 팝업 메뉴에서 "이미지 저장" 또는 "사진에 저장" 선택
-                     </div>
-                     <div class="step">
-                       <strong>3단계:</strong> 포토 앱에서 저장된 이미지 확인! 🎉
-                     </div>
-                     <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                       💡 저장이 안 되시나요? 설정 → Safari → 다운로드에서 위치를 확인해보세요.
-                     </p>
-                   </div>
-                 </div>
-                 <script>
-                   // 이미지 로드 완료 후 알림
-                   document.getElementById('resultImage').onload = function() {
-                     setTimeout(() => {
-                       alert('🍎 iPhone 사용자님!\\n\\n이미지를 길게 눌러서 "사진에 저장"을 선택해주세요! 📸');
-                     }, 1000);
-                   };
-                 </script>
-               </body>
-               </html>
-             `)
-             newWindow.document.close()
-             console.log('✅ iOS Safari 호환 저장 페이지 열림')
-           } else {
-             // 팝업 차단된 경우 직접 다운로드 시도
-             const link = document.createElement('a')
-             link.href = url
-             link.download = fileName
-             link.style.display = 'none'
-             document.body.appendChild(link)
-             link.click()
-             document.body.removeChild(link)
-             alert('🍎 다운로드가 시작되었습니다!\n\nSafari 하단의 다운로드 버튼을 확인해주세요! 📥')
-           }
-         } else {
-           // 안드로이드 및 기타 모바일
-           const link = document.createElement('a')
-           link.href = url
-           link.download = fileName
-           link.style.display = 'none'
-           document.body.appendChild(link)
-           link.click()
-           document.body.removeChild(link)
-           alert('📱 이미지 다운로드 완료!\n\n갤러리 또는 다운로드 폴더에서 확인하세요! 🎉')
-         }
-         
-         // URL 해제 (메모리 최적화)
-         setTimeout(() => URL.revokeObjectURL(url), 3000)
-        
-              } else {
-          // 💻 데스크톱: 다운로드
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = fileName
-          link.style.display = 'none'
-          
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          
-          // URL 해제
-          setTimeout(() => URL.revokeObjectURL(url), 1000)
-          
-          console.log('✅ 데스크톱 이미지 다운로드 완료:', fileName)
-          alert('💻 분석결과가 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 📥')
+        // 🚀 방법 1: 모바일 Web Share API (가장 빠름)
+        if (navigator.share) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/jpeg' })
+            await navigator.share({
+              title: `테토-에겐 분석 결과: ${analysisResult.type}`,
+              text: `나는 ${analysisResult.type}! 테토-에겐 성격 분석 결과를 확인해보세요!`,
+              files: [file]
+            })
+            console.log('✅ 모바일 공유 완료')
+            return
+          } catch (shareError) {
+            console.log('Web Share API 실패, 다운로드 방법 시도:', shareError)
+          }
         }
+        
+        // 🚀 방법 2: 직접 다운로드 (호환성 최고)
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        
+                alert('🚀 이미지 저장 완료!\n\n다운로드 폴더를 확인해보세요!')
+      } else {
+        // 💻 데스크톱: 직접 다운로드
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        
+        console.log('✅ 데스크톱 이미지 다운로드 완료:', fileName)
+        alert('💻 분석결과가 다운로드되었습니다!\n\n다운로드 폴더에서 확인해보세요! 📥')
+      }
       
     } catch (error) {
       console.error('❌ 저장 실패:', error)
