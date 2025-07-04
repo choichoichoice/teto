@@ -156,7 +156,7 @@ export default function Header() {
       
       {/* 헤더 하단 광고 배너 */}
       <div className="bg-gray-50 border-b border-gray-200">
-        <div className="flex w-full justify-center py-2">
+        <div className="flex w-full justify-center py-2" suppressHydrationWarning>
           <ins 
             className="kakao_ad_area" 
             style={{ display: "none" }}

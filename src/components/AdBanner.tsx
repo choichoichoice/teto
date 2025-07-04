@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 
 interface AdBannerProps {
   className?: string
@@ -11,7 +12,8 @@ interface AdBannerProps {
   fallbackContent?: React.ReactNode
 }
 
-export default function AdBanner({ 
+// 클라이언트 사이드에서만 렌더링되는 광고 컴포넌트
+function AdBannerClient({ 
   className, 
   style, 
   adUnit = "DAN-IpeTcqACgSzPdCbT",
@@ -19,8 +21,6 @@ export default function AdBanner({
   height = "100",
   fallbackContent
 }: AdBannerProps) {
-  const [isClient, setIsClient] = useState(false)
-  const [adLoaded, setAdLoaded] = useState(false)
   const [adError, setAdError] = useState(false)
   const [callbackFuncName, setCallbackFuncName] = useState<string>('')
 
@@ -45,8 +45,6 @@ export default function AdBanner({
   }, [adUnit, fallbackContent])
 
   useEffect(() => {
-    setIsClient(true)
-    
     // 콜백 함수 생성
     const funcName = createNoAdCallback()
     setCallbackFuncName(funcName)
@@ -60,7 +58,7 @@ export default function AdBanner({
   }, [createNoAdCallback])
 
   useEffect(() => {
-    if (!isClient || !callbackFuncName) return
+    if (!callbackFuncName) return
 
     console.log('🎯 카카오 AdFit 광고 로드 시도:', { adUnit, width, height })
 
@@ -80,7 +78,6 @@ export default function AdBanner({
             }
           })
           
-          setAdLoaded(true)
           console.log(`🎉 광고 활성화 완료: ${adUnit}`)
         } else {
           console.warn('⚠️ 카카오 AdFit 스크립트를 찾을 수 없습니다')
@@ -98,36 +95,10 @@ export default function AdBanner({
     return () => {
       clearTimeout(timer)
     }
-  }, [isClient, adUnit, width, height, callbackFuncName])
-
-  // 클라이언트 렌더링이 완료되기 전에는 placeholder 표시
-  if (!isClient) {
-    return (
-      <div 
-        className={className} 
-        style={style}
-      >
-        <div
-          style={{ 
-            width: `${width}px`,
-            height: `${height}px`,
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #e9ecef',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '12px'
-          }}
-        >
-          광고 준비 중...
-        </div>
-      </div>
-    )
-  }
+  }, [adUnit, width, height, callbackFuncName])
 
   return (
-    <div className={className} style={style} suppressHydrationWarning>
+    <div className={className} style={style}>
       <ins 
         className="kakao_ad_area"
         style={{ 
@@ -167,4 +138,26 @@ export default function AdBanner({
       )}
     </div>
   )
-} 
+}
+
+// 클라이언트 사이드에서만 렌더링되도록 동적 import
+const AdBanner = dynamic(() => Promise.resolve(AdBannerClient), {
+  ssr: false,
+  loading: () => (
+    <div style={{ 
+      width: '320px',
+      height: '100px',
+      backgroundColor: '#f8f9fa',
+      border: '1px solid #e9ecef',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#999',
+      fontSize: '12px'
+    }}>
+      광고 준비 중...
+    </div>
+  )
+})
+
+export default AdBanner 
