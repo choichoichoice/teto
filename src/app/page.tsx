@@ -116,7 +116,6 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* 성격 유형 소개 섹션 */}
       <section className="py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -193,19 +192,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA 섹션 위 광고 - 임시 비활성화 
-      <section className="py-4 bg-white">
-        <div className="flex w-full justify-center" suppressHydrationWarning>
-          <ins 
-            className="kakao_ad_area" 
-            style={{ display: "none" }}
-            data-ad-unit="DAN-aUUcXygN0CTtiqY5"
-            data-ad-width="320"
-            data-ad-height="50"
-          ></ins>
-        </div>
-      </section>
-      */}
+
 
       {/* CTA 섹션 */}
       <section className="py-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
